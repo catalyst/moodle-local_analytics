@@ -1,16 +1,14 @@
 moodle-local_analytics
-==================
+======================
 
-Catalyst notes (Version 20160212):
-  - Modified to be class based
-  - Moved common code into abstract class.
-  - PHPunit tests written with 100% coverage of all but settings code.
-  - Support for (optionally) uncloaking masquerading users in tracking
 
-  TODO:
-  - Support for recording main roles rather than switched roles.
+Catalyst Fork
+-------------
 
-Original release notes follow...
+This fork has several enhancements to be compatible with Moodle 3.1+
+
+
+---
 
 Release notes:
 
