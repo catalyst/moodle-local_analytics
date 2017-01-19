@@ -26,24 +26,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+use local_analytics\injector;
 
-function local_analytics_execute() {
-    $engine = null;
+require_once(__DIR__.'/../../config.php');
 
-    $enabled = get_config('local_analytics', 'enabled');
-    $analytics = get_config('local_analytics', 'analytics');
-
-    if ($enabled) {
-        $classname = "\\local_analytics\\api\\{$analytics}";
-        if (!class_exists($classname, true)) {
-            debugging("Local Analytics Module: Analytics setting '{$analytics}' doesn't map to a class name.");
-            return;
-        }
-
-        $engine = new $classname;
-        $engine::insert_tracking();
-    }
-}
-
-local_analytics_execute();
+injector::inject();

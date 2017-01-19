@@ -79,6 +79,7 @@ class local_analytics_types_testcase extends advanced_testcase {
 
         $this->resetAfterTest();
         $this->setAdminUser();
+        injector::reset();
 
         // Create course and wiki.
         $this->course = $this->getDataGenerator()->create_course();
@@ -174,7 +175,7 @@ class local_analytics_types_testcase extends advanced_testcase {
 
         set_config('enabled', false, 'local_analytics');
 
-        local_analytics_execute();
+        injector::inject();
 
         $this->assertEmpty($CFG->additionalhtmlhead);
     }
@@ -194,7 +195,7 @@ class local_analytics_types_testcase extends advanced_testcase {
     public function test_enabled_bogus_module_results_in_debugging_message() {
         set_config('analytics', 'i_am_bogus', 'local_analytics');
 
-        local_analytics_execute();
+        injector::inject();
 
         $this->assertDebuggingCalled();
     }
@@ -477,7 +478,7 @@ class local_analytics_types_testcase extends advanced_testcase {
     public function test_piwik_module_enabled_results_in_expected_output() {
         global $CFG;
 
-        local_analytics_execute();
+        injector::inject();
 
         $this->assertNotEmpty($CFG->additionalhtmlhead);
     }
@@ -585,7 +586,7 @@ class local_analytics_types_testcase extends advanced_testcase {
 
         $USER = $DB->get_record('user', ['id' => 1]);
 
-        local_analytics_execute();
+        injector::inject();
 
         $expected = file_get_contents(__DIR__.'/expected/google_analytics_course_page_unclean_url.html');
         $actual = $CFG->additionalhtmlhead;
@@ -616,7 +617,7 @@ class local_analytics_types_testcase extends advanced_testcase {
 
         $USER = $DB->get_record('user', ['id' => 1]);
 
-        local_analytics_execute();
+        injector::inject();
 
         $expected = file_get_contents(__DIR__.'/expected/google_analytics_course_page.html');
         $actual = $CFG->additionalhtmlhead;
@@ -721,7 +722,7 @@ class local_analytics_types_testcase extends advanced_testcase {
 
         $USER = $DB->get_record('user', ['id' => 1]);
 
-        local_analytics_execute();
+        injector::inject();
 
         $expected = file_get_contents(__DIR__.'/expected/google_analytics_universal.html');
         $actual = $CFG->additionalhtmlhead;
@@ -753,7 +754,7 @@ class local_analytics_types_testcase extends advanced_testcase {
 
         $USER = $DB->get_record('user', ['id' => 1]);
 
-        local_analytics_execute();
+        injector::inject();
 
         $expected = file_get_contents(__DIR__.'/expected/google_analytics_universal_course_unclean_url.html');
         $actual = $CFG->additionalhtmlhead;
