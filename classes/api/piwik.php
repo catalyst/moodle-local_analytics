@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Analytics
@@ -20,43 +20,31 @@
  * This module provides extensive analytics on a platform of choice
  * Currently support Google Analytics and Piwik
  *
- * @package local_analytics
+ * @package   local_analytics
  * @copyright David Bezemer <info@davidbezemer.nl>, www.davidbezemer.nl
- * @author David Bezemer <info@davidbezemer.nl>, Bas Brands <bmbrands@gmail.com>, Gavin Henrick <gavin@lts.ie>
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author    David Bezemer <info@davidbezemer.nl>, Bas Brands <bmbrands@gmail.com>, Gavin Henrick <gavin@lts.ie>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace local_analytics\api;
 
-//use local_analytics;
+use local_analytics\dimensions;
+
+defined('MOODLE_INTERNAL') || die();
 
 class piwik extends AbstractLocalAnalytics {
     /**
      * Build a custom variable string.
      *
-     * @param integer $index
-     *            The custom variable index number (1 through 5).
-     *
-     * @param string $name
-     *            The key name.
-     *
-     * @param string $value
-     *            The value string.
-     *
-     * @param string $context
-     *            The string describing the context.
-     *
+     * @param integer $index   The custom variable index number (1 through 5).
+     * @param string  $name    The key name.
+     * @param string  $value   The value string.
      * @return string The generated string.
      */
-    static public function local_get_custom_var_string($index, $name, $value, $context) {
-        $result = '_paq.push(["setCustomVariable", ';
-        $result .= $index . ', ';
-        $result .= '"' . $name . '", ';
-        $result .= '"' . $value . '", ';
-        /* $result .= '"' . $context . '"'; */
-        $result .= '"page"';
-        $result .= "]);\n";
+    static public function local_get_custom_var_string($index, $name, $value) {
+        return <<<EOD
+_paq.push(["setCustomVariable", {$index}, "{$name}", "{$value}", "page"]);
 
-        return $result;
+EOD;
     }
 
     /**
@@ -70,25 +58,22 @@ class piwik extends AbstractLocalAnalytics {
      * https://piwik.org/faq/general/faq_21117/
      */
     static public function insert_custom_moodle_variables() {
-        global $DB, $PAGE, $COURSE, $SITE, $USER;
+        global $COURSE, $USER;
         $customvars = "";
         $context = \context_course::instance($COURSE->id);
 
-        // Option is visit/page
-        // see http://piwik.org/docs/custom-variables/
+        // Option is visit/page, see http://piwik.org/docs/custom-variables/ for more information.
         $scope = 'page';
 
-        // User Details
-        // "John Smith ([user_id])"
-        $customvars .= self::local_get_custom_var_string(1, 'UserName', self::userFullName(), $scope);
+        // User Details ("John Smith ([user_id])").
+        $customvars .= self::local_get_custom_var_string(1, 'UserName', self::user_full_name(), $scope);
 
-        // User Role
+        // User Role.
         if (is_siteadmin($USER->id)) {
             $rolestr = "Admin";
-        }
-        else {
+        } else {
             $roles = get_user_roles($context, $USER->id);
-            $rolestr = array();
+            $rolestr = [];
             foreach ($roles as $role) {
                 $rolestr[] = role_get_name($role, $context);
             }
@@ -99,12 +84,10 @@ class piwik extends AbstractLocalAnalytics {
         // Context Type: i.e. page , course, activity ?
         $customvars .= self::local_get_custom_var_string(3, 'Context', $context->get_context_name(), $scope);
 
-        // Course Name
-        // "Mathematics for Accountants ([course_id])"
+        // Course Name "Mathematics for Accountants ([course_id])".
         $customvars .= self::local_get_custom_var_string(4, 'CourseName', $COURSE->fullname, $scope);
 
-        // Max 5 Variables
-
+        // Max 5 Variables.
         return $customvars;
     }
 
@@ -113,17 +96,17 @@ class piwik extends AbstractLocalAnalytics {
      *
      * @param integer $index
      *            The custom dimension index number (Piwik assigne).
-     * * @param string $context
+     *            * @param string $context
      *            The string describing the context.
-     * @param string $value
+     * @param string  $value
      *            The value string.
      *
      * @return string The generated string.
      */
     static public function local_get_custom_dimension_string($index, $context, $value) {
         $result = '_paq.push(["setCustomDimension", ';
-        $result .= 'customDimensionId = ' . $index . ', ';
-        $result .= 'customDimensionValue = "' . $value . '"';
+        $result .= 'customDimensionId = '.$index.', ';
+        $result .= 'customDimensionValue = "'.$value.'"';
         $result .= "]);\n";
 
         return $result;
@@ -134,23 +117,23 @@ class piwik extends AbstractLocalAnalytics {
      *
      * @param string $scope
      *   The scope (visit or action) being considered.
-     * @param int $index
+     * @param int    $index
      *   The setting index within that slot to consider.
      *
      * @return mixed
      *   Array containing the data if it's to be used, null otherwise.
      */
     static public function get_dimension_values($scope, $index) {
-        $plugins = \local_analytics\dimensions::instantiate_plugins();
+        $plugins = dimensions::instantiate_plugins();
 
-        $name = 'piwikdimensioncontent_' . $scope . '_' . $index;
+        $name = 'piwikdimensioncontent_'.$scope.'_'.$index;
         $dimension = get_config('local_analytics', $name);
 
         if ($dimension == '') {
             return null;
         }
 
-        $key = '\local_analytics\dimension\\' . $dimension;
+        $key = '\local_analytics\dimension\\'.$dimension;
 
         if (!array_key_exists($key, $plugins[$scope])) {
             debugging("Local Analytics Piwik Dimension Plugin '${dimension}' is missing.", DEBUG_NORMAL);
@@ -158,11 +141,11 @@ class piwik extends AbstractLocalAnalytics {
             return null;
         }
 
-        $name = 'piwikdimensionid_' . $scope . '_' . $index;
+        $name = 'piwikdimensionid_'.$scope.'_'.$index;
         $dimensionid = get_config('local_analytics', $name);
 
         if ($dimensionid == '') {
-            debugging("Local Analytics Piwik dimension action plugin #" . $index . " has been chosen but no
+            debugging("Local Analytics Piwik dimension action plugin #".$index." has been chosen but no
                         ID has been supplied.", DEBUG_NORMAL);
 
             return null;
@@ -170,7 +153,7 @@ class piwik extends AbstractLocalAnalytics {
 
         $value = $plugins[$scope][$key]->value();
 
-        return array($dimensionid, $dimension, $value);
+        return [$dimensionid, $dimension, $value];
     }
 
     /**
@@ -186,18 +169,18 @@ class piwik extends AbstractLocalAnalytics {
      *   An array of the details to pass to the renderer.
      */
     static public function dimensions_for_scope($scope) {
-        $num_dimensions = get_config('local_analytics', 'piwik_number_dimensions_' . $scope);
+        $numdimensions = get_config('local_analytics', 'piwik_number_dimensions_'.$scope);
 
-        $result = array();
+        $result = [];
 
-        for ($i = 1; $i <= $num_dimensions; $i++) {
+        for ($i = 1; $i <= $numdimensions; $i++) {
             list($dimensionid, $dimension, $value) = self::get_dimension_values($scope, $i);
 
             if (!$dimensionid || !$value) {
                 continue;
             }
 
-            $result[] = array('id' => $dimensionid, 'dimension' => $dimension, 'value' => $value);
+            $result[] = ['id' => $dimensionid, 'dimension' => $dimension, 'value' => $value];
         }
 
         return $result;
@@ -216,7 +199,7 @@ class piwik extends AbstractLocalAnalytics {
         $result = '';
         foreach ($dimensions as $dimension) {
             $result .= self::local_get_custom_dimension_string($dimension['id'], $dimension['dimension'],
-                $dimension['value'], 'action');
+                                                               $dimension['value'], 'action');
         }
 
         return $result;
@@ -237,7 +220,7 @@ class piwik extends AbstractLocalAnalytics {
         $object = new \stdClass();
 
         foreach ($dimensions as $dimension) {
-            $attrib = 'dimension' . $dimension['id'];
+            $attrib = 'dimension'.$dimension['id'];
             $object->$attrib = $dimension['value'];
         }
 
@@ -245,7 +228,7 @@ class piwik extends AbstractLocalAnalytics {
             $content[] = $object;
         }
 
-        $result = "_paq.push(" . json_encode($content) . ");\n";
+        $result = "_paq.push(".json_encode($content).");\n";
         return $result;
     }
 
@@ -256,10 +239,10 @@ class piwik extends AbstractLocalAnalytics {
      */
     static public function insert_custom_moodle_dimensions() {
 
-        $plugins = \local_analytics\dimensions::instantiate_plugins();
+        $plugins = dimensions::instantiate_plugins();
         $customvars = '';
 
-        foreach ($plugins as $scope => $scope_plugins) {
+        foreach ($plugins as $scope => $scopeplugins) {
             $dimensions = self::dimensions_for_scope($scope);
             $renderer = "render_dimensions_for_${scope}_scope";
             $customvars .= self::$renderer($dimensions);
@@ -281,8 +264,7 @@ class piwik extends AbstractLocalAnalytics {
     static public function local_insert_custom_moodle_vars() {
         if (get_config('local_analytics', 'piwikusedimensions')) {
             return self::insert_custom_moodle_dimensions();
-        }
-        else {
+        } else {
             return self::insert_custom_moodle_variables();
         }
     }
@@ -294,40 +276,38 @@ class piwik extends AbstractLocalAnalytics {
         $siteurl = get_config('local_analytics', 'siteurl');
         $siteid = get_config('local_analytics', 'siteid');
         $cleanurl = get_config('local_analytics', 'cleanurl');
-        $location = "additionalhtml" . get_config('local_analytics', 'location');
+        $location = "additionalhtml".get_config('local_analytics', 'location');
 
         if (!empty($siteurl)) {
             if ($imagetrack) {
-                $addition = '<noscript><p><img src="//' . $siteurl . '/piwik.php?idsite=' . $siteid . '" style="border:0;" alt="" /></p></noscript>';
-            }
-            else {
+                $addition = '<noscript><p><img src="//'.$siteurl.'/piwik.php?idsite='.$siteid.'" style="border:0;" alt="" /></p></noscript>';
+            } else {
                 $addition = '';
             }
 
             if ($cleanurl) {
-                $doctitle = "_paq.push(['setDocumentTitle', '" . self::trackurl() . "']);\n";
-            }
-            else {
+                $doctitle = "_paq.push(['setDocumentTitle', '".self::trackurl()."']);\n";
+            } else {
                 $doctitle = "";
             }
 
-            if (self::shouldTrack()) {
+            if (self::should_track()) {
                 $CFG->$location .= "
     <!-- Start Piwik Code -->
     <script type='text/javascript'>
         var _paq = _paq || [];
-        " . $doctitle . self::local_insert_custom_moodle_vars() . "
+        ".$doctitle.self::local_insert_custom_moodle_vars()."
         _paq.push(['setUserId', $USER->id]);
         _paq.push(['trackPageView']);
         _paq.push(['enableLinkTracking']);
         _paq.push(['enableHeartBeatTimer', 30]);
         (function() {
-          var u='//" . $siteurl . "/';
+          var u='//".$siteurl."/';
           _paq.push(['setTrackerUrl', u+'piwik.php']);
-          _paq.push(['setSiteId', " . $siteid . "]); var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+          _paq.push(['setSiteId', ".$siteid."]); var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
         g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
         })();
-    </script>" . $addition . "<!-- End Piwik Code -->\n";
+    </script>".$addition."<!-- End Piwik Code -->\n";
             }
         }
     }

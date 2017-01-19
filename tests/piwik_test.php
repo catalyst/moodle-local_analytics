@@ -1,6 +1,20 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
- * @file
  * Piwik specific tests.
  *
  * @package    local_analytics
@@ -11,15 +25,17 @@
  */
 namespace local_analytics;
 
-class piwik_test extends \advanced_testcase {
+use advanced_testcase;
 
-    public function setUp()
-    {
+defined('MOODLE_INTERNAL') || die();
+
+class piwik_test extends advanced_testcase {
+    public function setUp() {
         global $USER;
         $this->resetAfterTest();
 
         // Set up the settings.
-        set_config('piwikusedimensions', TRUE, 'local_analytics');
+        set_config('piwikusedimensions', true, 'local_analytics');
 
         set_config('piwik_number_dimensions_visit', '5', 'local_analytics');
         set_config('piwikdimensioncontent_visit_1', 'user_name', 'local_analytics');
@@ -49,13 +65,11 @@ class piwik_test extends \advanced_testcase {
      * GIVEN the Piwik class
      * WHEN the local_get_custom_dimension_string function is called
      * THEN resulting string should match expectations
-     *
-     * @test
      */
-    public function customDimensionStringFormattedAsExpected() {
+    public function test_custom_dimension_string_formatted_as_expected() {
         $actual = api\piwik::local_get_custom_dimension_string(13579, 'some_context_please', 'chocolate_fish');
 
-        $expected = '_paq.push(["setCustomDimension", customDimensionId = 13579, customDimensionValue = "chocolate_fish"]);' . "\n";
+        $expected = '_paq.push(["setCustomDimension", customDimensionId = 13579, customDimensionValue = "chocolate_fish"]);'."\n";
         $this->assertSame($expected, $actual);
     }
 
@@ -65,17 +79,15 @@ class piwik_test extends \advanced_testcase {
      * GIVEN the Piwik class
      * WHEN the local_get_custom_dimension_string function is called
      * THEN resulting string should match expectations
-     *
-     * @test
      */
-    public function customDimensionValuesObtainedCorrectly() {
+    public function test_custom_dimension_values_obtained_correctly() {
         $actual = api\piwik::get_dimension_values('visit', 1);
 
-        $expected = array(
+        $expected = [
             0 => '2468',
             1 => 'user_name',
             2 => 'Foo Bar',
-        );
+        ];
         $this->assertSame($expected, $actual);
     }
 
@@ -87,10 +99,8 @@ class piwik_test extends \advanced_testcase {
      * AND a value is chosen but no ID is set
      * THEN a debug message should be set
      * AND NULL should be returned.
-     *
-     * @test won't work. Requires testFnName due to assertDebuggingCalled
      */
-    public function testCustomDimension() {
+    public function test_custom_dimension() {
         $actual = api\piwik::get_dimension_values('visit', 10);
 
         $this->assertDebuggingCalled("Local Analytics Piwik dimension action plugin #10 has been chosen but no
@@ -106,10 +116,8 @@ class piwik_test extends \advanced_testcase {
      * AND a value is chosen but the plugin can't be instantiated
      * THEN a debug message should be set
      * AND NULL should be returned.
-     *
-     * @test won't work. Requires testFnName due to assertDebuggingCalled
      */
-    public function testCustomDimensionHandlesMissingPluginWithDebugMessage() {
+    public function test_custom_dimension_handles_missing_plugin_with_debug_message() {
         $actual = api\piwik::get_dimension_values('visit', 11);
 
         $this->assertDebuggingCalled("Local Analytics Piwik Dimension Plugin 'missing_plugin' is missing.");
@@ -124,10 +132,8 @@ class piwik_test extends \advanced_testcase {
      * AND no value is chosen
      * THEN no debug message should be set
      * AND NULL should be returned.
-     *
-     * @test won't work. Requires testFnName due to assertDebuggingNotCalled
      */
-    public function testCustomDimensionHandlesNoValueSetAsExpected() {
+    public function test_custom_dimension_handles_no_value_set_as_expected() {
         $actual = api\piwik::get_dimension_values('visit', 4);
 
         $this->assertDebuggingNotCalled();
@@ -145,23 +151,21 @@ class piwik_test extends \advanced_testcase {
      *
      * @test
      */
-    public function dimensionsForScopeHonoursNumberOfDimensionsSetting() {
+    public function test_dimensions_for_scope_honours_number_of_dimensions_setting() {
         $actual = api\piwik::dimensions_for_scope('visit');
 
-        $expected = array(
-            0 =>
-                array(
-                    'id' => '2468',
-                    'dimension' => 'user_name',
-                    'value' => 'Foo Bar',
-                ),
-            1 =>
-                array(
-                    'id' => '2468',
-                    'dimension' => 'user_name',
-                    'value' => 'Foo Bar',
-                ),
-        );
+        $expected = [
+            0 => [
+                'id'        => '2468',
+                'dimension' => 'user_name',
+                'value'     => 'Foo Bar',
+            ],
+            1 => [
+                'id'        => '2468',
+                'dimension' => 'user_name',
+                'value'     => 'Foo Bar',
+            ],
+        ];
         $this->assertSame($expected, $actual);
     }
 
@@ -173,15 +177,13 @@ class piwik_test extends \advanced_testcase {
      * GIVEN the Piwik class
      * WHEN the render_dimensions_for_action_scope function is called
      * THEN the output should be as expected.
-     *
-     * @test
      */
-    public function outputOfRenderDimensionsForActionScopeAsExpected() {
+    public function test_output_of_render_dimensions_for_action_scope_as_expected() {
         $vars = api\piwik::dimensions_for_scope('action');
         $actual = api\piwik::render_dimensions_for_action_scope($vars);
 
-        $expected = '_paq.push(["setCustomDimension", customDimensionId = 1357, customDimensionValue = "PHPUnit test site"]);
-';
+        $expected = '_paq.push(["setCustomDimension", customDimensionId = 1357, '.
+                    'customDimensionValue = "PHPUnit test site"]);'."\n";
         $this->assertSame($expected, $actual);
     }
 
@@ -191,15 +193,13 @@ class piwik_test extends \advanced_testcase {
      * GIVEN the Piwik class
      * WHEN the render_dimensions_for_visit_scope function is called
      * THEN the output should be as expected.
-     *
-     * @test
      */
-    public function outputOfRenderDimensionsForVisitScopeAsExpected() {
+    public function test_output_of_render_dimensions_for_visit_scope_as_expected() {
         $vars = api\piwik::dimensions_for_scope('visit');
         $actual = api\piwik::render_dimensions_for_visit_scope($vars);
 
-        $expected = '_paq.push(["trackPageView","",{"dimension2468":"Foo Bar"}]);
-';
+        $expected = '_paq.push(["trackPageView","",{"dimension2468":"Foo Bar"}]);'."\n";
+
         $this->assertSame($expected, $actual);
     }
 
@@ -209,14 +209,13 @@ class piwik_test extends \advanced_testcase {
      * GIVEN the Piwik class
      * WHEN the insert_custom_moodle_dimensions function is called
      * THEN the output should be as expected.
-     *
-     * @test
      */
-    public function outputOfInsertCustomMoodleDimensionsWorksAsExpected() {
+    public function test_output_of_insert_custom_moodle_dimensions_works_as_expected() {
         $actual = api\piwik::insert_custom_moodle_dimensions();
-        $expected = '_paq.push(["setCustomDimension", customDimensionId = 1357, customDimensionValue = "PHPUnit test site"]);
-_paq.push(["trackPageView","",{"dimension2468":"Foo Bar"}]);
-';
+        $expected = '_paq.push(["setCustomDimension", customDimensionId = 1357, '.
+                    'customDimensionValue = "PHPUnit test site"]);'."\n".
+                    '_paq.push(["trackPageView","",{"dimension2468":"Foo Bar"}]);'."\n";
+
         $this->assertSame($expected, $actual);
     }
 
@@ -228,28 +227,29 @@ _paq.push(["trackPageView","",{"dimension2468":"Foo Bar"}]);
      * AND the piwikusedimensions configuration value is FALSE
      * AND the custom variables are unconfigured
      * THEN the output should use custom variables.
-     *
-     * @test
      */
-    public function localInsertCustomMoodleVarsHonoursPiwikusedimensions() {
+    public function test_local_insert_custom_moodle_vars_honours_piwikusedimensions() {
 
         // First with dimensions enabled.
         $actual = api\piwik::local_insert_custom_moodle_vars();
-        $expected = '_paq.push(["setCustomDimension", customDimensionId = 1357, customDimensionValue = "PHPUnit test site"]);
-_paq.push(["trackPageView","",{"dimension2468":"Foo Bar"}]);
-';
+        $expected = '_paq.push(["setCustomDimension", customDimensionId = 1357, '.
+                    'customDimensionValue = "PHPUnit test site"]);'."\n".
+                    '_paq.push(["trackPageView","",{"dimension2468":"Foo Bar"}]);'."\n";
+
         $this->assertSame($expected, $actual);
 
         // Then with them disabled.
-        set_config('piwikusedimensions', FALSE, 'local_analytics');
+        set_config('piwikusedimensions', false, 'local_analytics');
 
         $actual = api\piwik::local_insert_custom_moodle_vars();
-        $expected = '_paq.push(["setCustomVariable", 1, "UserName", "Foo Bar", "page"]);
+        $expected = <<<EOD
+_paq.push(["setCustomVariable", 1, "UserName", "Foo Bar", "page"]);
 _paq.push(["setCustomVariable", 2, "UserRole", "", "page"]);
 _paq.push(["setCustomVariable", 3, "Context", "Front page", "page"]);
 _paq.push(["setCustomVariable", 4, "CourseName", "PHPUnit test site", "page"]);
-';
+
+EOD;
+
         $this->assertSame($expected, $actual);
     }
-
 }

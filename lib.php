@@ -29,19 +29,19 @@
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 
 function local_analytics_execute() {
-    $engine = NULL;
+    $engine = null;
 
     $enabled = get_config('local_analytics', 'enabled');
     $analytics = get_config('local_analytics', 'analytics');
 
     if ($enabled) {
-        $class_name = "\local_analytics\api\\" . $analytics;
-        if (!class_exists($class_name, TRUE)) {
+        $classname = "\\local_analytics\\api\\{$analytics}";
+        if (!class_exists($classname, true)) {
             debugging("Local Analytics Module: Analytics setting '{$analytics}' doesn't map to a class name.");
             return;
         }
 
-        $engine = new $class_name;
+        $engine = new $classname;
         $engine::insert_tracking();
     }
 }

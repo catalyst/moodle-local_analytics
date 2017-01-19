@@ -26,6 +26,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_analytics\dimensions;
+
 defined('MOODLE_INTERNAL') || die;
 
 if (is_siteadmin()) {
@@ -46,11 +48,11 @@ if (is_siteadmin()) {
     $guniversal = get_string('guniversal', 'local_analytics');
     $piwik = get_string('piwik', 'local_analytics');
     $default = 'piwik';
-    $choices = array(
-        'piwik' => $piwik,
+    $choices = [
+        'piwik'      => $piwik,
         'ganalytics' => $ganalytics,
         'guniversal' => $guniversal,
-    );
+    ];
     $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);
     $settings->add($setting);
 
@@ -68,52 +70,53 @@ if (is_siteadmin()) {
     $setting = new admin_setting_configcheckbox($name, $title, $description, $default, true, false);
     $settings->add($setting);
 
-    // Find out what scopes are supported (making it future proof)
-    $plugins = \local_analytics\dimensions::instantiate_plugins();
+    // Find out what scopes are supported (making it future proof).
+    $plugins = dimensions::instantiate_plugins();
 
-    foreach ($plugins as $scope => $scope_plugins) {
-        $lang_args = new \stdClass();
-        $lang_args->scope = $scope;
-        $lang_args->custom = ($scope == 'visit') ? 'custom ' : '';
+    foreach ($plugins as $scope => $scopeplugins) {
+        $langargs = new \stdClass();
+        $langargs->scope = $scope;
+        $langargs->custom = ($scope == 'visit') ? 'custom ' : '';
 
-        $name = 'local_analytics/piwik_number_dimensions_' . $scope;
-        $title = get_string('piwik_number_dimensions', 'local_analytics', $lang_args);
-        $description = get_string('piwik_number_dimensions_desc', 'local_analytics', $lang_args);
+        $name = 'local_analytics/piwik_number_dimensions_'.$scope;
+        $title = get_string('piwik_number_dimensions', 'local_analytics', $langargs);
+        $description = get_string('piwik_number_dimensions_desc', 'local_analytics', $langargs);
         $default = '5';
 
         $setting = new admin_setting_configtext($name, $title, $description, $default);
         $settings->add($setting);
 
-        $choices = \local_analytics\dimensions::setting_options($scope);
-        $num_dimensions = get_config('local_analytics', 'piwik_number_dimensions_' . $scope, 5);
+        $choices = dimensions::setting_options($scope);
+        $numdimensions = get_config('local_analytics', 'piwik_number_dimensions_'.$scope);
 
-        for ($i = 1; $i <= $num_dimensions; $i++) {
+        for ($i = 1; $i <= $numdimensions; $i++) {
             // Get an ordinal string to try to make the description less ambiguous.
             // (I could see someone thinking 'Dimension 1' means Piwik ID 1.
-            // Algo from http://stackoverflow.com/questions/3109978/display-numbers-with-ordinal-suffix-in-php
-            $ends = array('th','st','nd','rd','th','th','th','th','th','th');
-            if (($i %100) >= 11 && ($i%100) <= 13)
-                $ordinal = $i. 'th';
-            else
-                $ordinal = $i. $ends[$i % 10];
+            // See http://stackoverflow.com/questions/3109978/display-numbers-with-ordinal-suffix-in-php for info.
+            $ends = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'];
+            if (($i % 100) >= 11 && ($i % 100) <= 13) {
+                $ordinal = $i.'th';
+            } else {
+                $ordinal = $i.$ends[$i % 10];
+            }
 
-            // A field for entering the dimension ID
-            $name = 'local_analytics/piwikdimensionid_' . $scope . '_' . $i;
-            $lang_args = new \stdClass();
-            $lang_args->id = $ordinal;
-            $lang_args->scope = $scope;
-            $title = get_string('piwikdimensionid', 'local_analytics', $lang_args);
-            $description = get_string('piwikdimensionid_desc', 'local_analytics', $lang_args);
+            // A field for entering the dimension ID.
+            $name = 'local_analytics/piwikdimensionid_'.$scope.'_'.$i;
+            $langargs = new \stdClass();
+            $langargs->id = $ordinal;
+            $langargs->scope = $scope;
+            $title = get_string('piwikdimensionid', 'local_analytics', $langargs);
+            $description = get_string('piwikdimensionid_desc', 'local_analytics', $langargs);
             $setting = new admin_setting_configtext($name, $title, $description, '');
             $settings->add($setting);
 
             // And one for picking what content is used.
-            $name = 'local_analytics/piwikdimensioncontent_' . $scope . '_' . $i;
-            $lang_args = new \stdClass();
-            $lang_args->id = $ordinal;
-            $lang_args->scope = $scope;
-            $title = get_string('piwikdimension', 'local_analytics', $lang_args);
-            $description = get_string('piwikdimensiondesc', 'local_analytics', $lang_args);
+            $name = 'local_analytics/piwikdimensioncontent_'.$scope.'_'.$i;
+            $langargs = new \stdClass();
+            $langargs->id = $ordinal;
+            $langargs->scope = $scope;
+            $title = get_string('piwikdimension', 'local_analytics', $langargs);
+            $description = get_string('piwikdimensiondesc', 'local_analytics', $langargs);
             $setting = new admin_setting_configselect($name, $title, $description, '', $choices);
             $settings->add($setting);
         }
@@ -161,12 +164,11 @@ if (is_siteadmin()) {
     $topofbody = get_string('topofbody', 'local_analytics');
     $footer = get_string('footer', 'local_analytics');
     $default = 'head';
-    $choices = array(
-        'head' => $head,
+    $choices = [
+        'head'      => $head,
         'topofbody' => $topofbody,
-        'footer' => $footer,
-    );
+        'footer'    => $footer,
+    ];
     $setting = new admin_setting_configselect($name, $title, $description, $default, $choices);
     $settings->add($setting);
-
 }

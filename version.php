@@ -26,8 +26,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version  = 2015012200;
+defined('MOODLE_INTERNAL') || die;
+
+$plugin->version  = 2017011900;
 $plugin->requires = 2011033010;
-$plugin->release = '1.5 (Build: 2014100801)';
+$plugin->release = '1.6 (Build: 2017011900)';
 $plugin->maturity = MATURITY_STABLE;
 $plugin->component = 'local_analytics';
