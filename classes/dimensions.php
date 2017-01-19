@@ -82,7 +82,7 @@ class dimensions {
 
             self::$dimensioninstances = [];
 
-            foreach ($listoffiles as $index => $entry) {
+            foreach ($listoffiles as $entry) {
                 $classname = '\local_analytics\dimension\\'.substr($entry, 0, -4);
 
                 self::instantiate_plugin($classname);
@@ -113,7 +113,7 @@ class dimensions {
                 // Nothing is selected entry.
                 $result[$scope][''] = '';
 
-                foreach ($scopeplugins as $file => $plugin) {
+                foreach ($scopeplugins as $plugin) {
                     $langstring = get_string($plugin::$name, 'local_analytics');
                     $result[$scope][$plugin::$name] = $langstring;
                 }

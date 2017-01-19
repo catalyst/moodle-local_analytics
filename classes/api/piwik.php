@@ -103,7 +103,7 @@ EOD;
      *
      * @return string The generated string.
      */
-    static public function local_get_custom_dimension_string($index, $context, $value) {
+    static public function local_get_custom_dimension_string($index, $value) {
         $result = '_paq.push(["setCustomDimension", ';
         $result .= 'customDimensionId = '.$index.', ';
         $result .= 'customDimensionValue = "'.$value.'"';
@@ -198,8 +198,7 @@ EOD;
     static public function render_dimensions_for_action_scope($dimensions) {
         $result = '';
         foreach ($dimensions as $dimension) {
-            $result .= self::local_get_custom_dimension_string($dimension['id'], $dimension['dimension'],
-                                                               $dimension['value'], 'action');
+            $result .= self::local_get_custom_dimension_string($dimension['id'], $dimension['value']);
         }
 
         return $result;
@@ -242,7 +241,7 @@ EOD;
         $plugins = dimensions::instantiate_plugins();
         $customvars = '';
 
-        foreach ($plugins as $scope => $scopeplugins) {
+        foreach (array_keys($plugins) as $scope) {
             $dimensions = self::dimensions_for_scope($scope);
             $renderer = "render_dimensions_for_${scope}_scope";
             $customvars .= self::$renderer($dimensions);

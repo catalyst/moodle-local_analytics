@@ -53,7 +53,7 @@ class local_analytics_dimensions_testcase extends advanced_testcase {
     public function test_instantiate_plugins_returns_array_of_plugins() {
         $plugins = dimensions::instantiate_plugins();
 
-        foreach ($plugins as $scope => $scopeplugins) {
+        foreach ($plugins as $scopeplugins) {
             foreach ($scopeplugins as $name => $plugin) {
                 $this->assertInstanceOf($name, $plugin);
             }
@@ -70,10 +70,10 @@ class local_analytics_dimensions_testcase extends advanced_testcase {
     public function test_instantiated_plugins_implement_interface() {
         $plugins = dimensions::instantiate_plugins();
 
-        foreach ($plugins as $scope => $scopeplugins) {
+        foreach ($plugins as $scopeplugins) {
             foreach ($scopeplugins as $name => $plugin) {
                 $this->assertTrue($plugin instanceOf dimension_interface,
-                                  "The ${name} plugin doesn't implement the dimension interface");
+                                  "The {$name} plugin doesn't implement the dimension interface");
             }
         }
     }

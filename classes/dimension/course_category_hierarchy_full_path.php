@@ -54,7 +54,7 @@ class course_category_hierarchy_full_path implements dimension_interface {
 
         $result = '';
 
-        foreach ($parents as $key => $content) {
+        foreach ($parents as $content) {
             $result .= '\\'.$content->get_context_name(false);
         }
 

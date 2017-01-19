@@ -67,7 +67,7 @@ class piwik_test extends advanced_testcase {
      * THEN resulting string should match expectations
      */
     public function test_custom_dimension_string_formatted_as_expected() {
-        $actual = api\piwik::local_get_custom_dimension_string(13579, 'some_context_please', 'chocolate_fish');
+        $actual = api\piwik::local_get_custom_dimension_string(13579, 'chocolate_fish');
 
         $expected = '_paq.push(["setCustomDimension", customDimensionId = 13579, customDimensionValue = "chocolate_fish"]);'."\n";
         $this->assertSame($expected, $actual);
