@@ -79,6 +79,7 @@ class local_analytics_types_testcase extends advanced_testcase {
 
         $this->resetAfterTest();
         $this->setAdminUser();
+        injector::reset();
 
         // Create course and wiki.
         $this->course = $this->getDataGenerator()->create_course();
@@ -87,10 +88,6 @@ class local_analytics_types_testcase extends advanced_testcase {
         // Assign the guest role to the guest user in the course.
         $context = context_course::instance($this->course->id);
         role_assign(6, 1, $context->id);
-
-        // Set the location where output will be added.
-        set_config('location', 'header', 'local_analytics');
-        $CFG->additionalhtmlheader = '';
 
         // Set default config to minimise repetition across tests.
         set_config('enabled', true, 'local_analytics');
@@ -101,7 +98,7 @@ class local_analytics_types_testcase extends advanced_testcase {
         set_config('trackadmin', true, 'local_analytics');
         set_config('masquerade_handling', true, 'local_analytics');
         set_config('cleanurl', true, 'local_analytics');
-        set_config('location', 'header', 'local_analytics');
+        set_config('location', 'head', 'local_analytics');
         set_config('piwikusedimensions', false, 'local_analytics');
     }
 
@@ -178,9 +175,9 @@ class local_analytics_types_testcase extends advanced_testcase {
 
         set_config('enabled', false, 'local_analytics');
 
-        local_analytics_execute();
+        injector::inject();
 
-        $this->assertEmpty($CFG->additionalhtmlheader);
+        $this->assertEmpty($CFG->additionalhtmlhead);
     }
 
     /**
@@ -198,7 +195,7 @@ class local_analytics_types_testcase extends advanced_testcase {
     public function test_enabled_bogus_module_results_in_debugging_message() {
         set_config('analytics', 'i_am_bogus', 'local_analytics');
 
-        local_analytics_execute();
+        injector::inject();
 
         $this->assertDebuggingCalled();
     }
@@ -405,7 +402,7 @@ class local_analytics_types_testcase extends advanced_testcase {
         $piwik = new api\piwik();
         $piwik::insert_tracking();
 
-        $actual = $CFG->additionalhtmlheader;
+        $actual = $CFG->additionalhtmlhead;
         $expected = file_get_contents(__DIR__.'/expected/piwik_additional.html');
 
         $this->assertEquals($expected, $actual);
@@ -434,7 +431,7 @@ class local_analytics_types_testcase extends advanced_testcase {
         $piwik = new api\piwik();
         $piwik::insert_tracking();
 
-        $actual = $CFG->additionalhtmlheader;
+        $actual = $CFG->additionalhtmlhead;
         $expected = file_get_contents(__DIR__.'/expected/piwik_additional_no_cleanurl.html');
 
         $this->assertEquals($expected, $actual);
@@ -463,7 +460,7 @@ class local_analytics_types_testcase extends advanced_testcase {
         $piwik = new api\piwik();
         $piwik::insert_tracking();
 
-        $actual = $CFG->additionalhtmlheader;
+        $actual = $CFG->additionalhtmlhead;
         $expected = file_get_contents(__DIR__.'/expected/piwik_additional_no_imagetrack.html');
 
         $this->assertEquals($expected, $actual);
@@ -481,9 +478,9 @@ class local_analytics_types_testcase extends advanced_testcase {
     public function test_piwik_module_enabled_results_in_expected_output() {
         global $CFG;
 
-        local_analytics_execute();
+        injector::inject();
 
-        $this->assertNotEmpty($CFG->additionalhtmlheader);
+        $this->assertNotEmpty($CFG->additionalhtmlhead);
     }
 
     /**
@@ -589,10 +586,10 @@ class local_analytics_types_testcase extends advanced_testcase {
 
         $USER = $DB->get_record('user', ['id' => 1]);
 
-        local_analytics_execute();
+        injector::inject();
 
         $expected = file_get_contents(__DIR__.'/expected/google_analytics_course_page_unclean_url.html');
-        $actual = $CFG->additionalhtmlheader;
+        $actual = $CFG->additionalhtmlhead;
 
         $this->assertEquals($expected, $actual);
     }
@@ -620,10 +617,10 @@ class local_analytics_types_testcase extends advanced_testcase {
 
         $USER = $DB->get_record('user', ['id' => 1]);
 
-        local_analytics_execute();
+        injector::inject();
 
         $expected = file_get_contents(__DIR__.'/expected/google_analytics_course_page.html');
-        $actual = $CFG->additionalhtmlheader;
+        $actual = $CFG->additionalhtmlhead;
 
         $this->assertEquals($expected, $actual);
     }
@@ -725,10 +722,10 @@ class local_analytics_types_testcase extends advanced_testcase {
 
         $USER = $DB->get_record('user', ['id' => 1]);
 
-        local_analytics_execute();
+        injector::inject();
 
         $expected = file_get_contents(__DIR__.'/expected/google_analytics_universal.html');
-        $actual = $CFG->additionalhtmlheader;
+        $actual = $CFG->additionalhtmlhead;
 
         $this->assertEquals($expected, $actual);
     }
@@ -757,10 +754,10 @@ class local_analytics_types_testcase extends advanced_testcase {
 
         $USER = $DB->get_record('user', ['id' => 1]);
 
-        local_analytics_execute();
+        injector::inject();
 
         $expected = file_get_contents(__DIR__.'/expected/google_analytics_universal_course_unclean_url.html');
-        $actual = $CFG->additionalhtmlheader;
+        $actual = $CFG->additionalhtmlhead;
 
         $this->assertEquals($expected, $actual);
     }

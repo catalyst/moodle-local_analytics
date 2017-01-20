@@ -26,24 +26,51 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+use local_analytics\injector;
 
-function local_analytics_execute() {
-    $engine = null;
+require_once(__DIR__.'/../../config.php');
 
-    $enabled = get_config('local_analytics', 'enabled');
-    $analytics = get_config('local_analytics', 'analytics');
-
-    if ($enabled) {
-        $classname = "\\local_analytics\\api\\{$analytics}";
-        if (!class_exists($classname, true)) {
-            debugging("Local Analytics Module: Analytics setting '{$analytics}' doesn't map to a class name.");
-            return;
-        }
-
-        $engine = new $classname;
-        $engine::insert_tracking();
-    }
+/**
+ * Used since Moodle 29.
+ */
+function local_analytics_extend_navigation() {
+    injector::inject();
 }
 
-local_analytics_execute();
+/**
+ * Used since Moodle 29.
+ */
+function local_analytics_extend_settings_navigation() {
+    injector::inject();
+}
+
+/**
+ * Used in Moodle 30+ when a user is logged on.
+ */
+function local_analytics_extend_navigation_user_settings() {
+    injector::inject();
+}
+
+/**
+ * Used in Moodle 30+ on the frontpage.
+ */
+function local_analytics_extend_navigation_frontpage() {
+    injector::inject();
+}
+
+/**
+ * Used in Moodle 31+ when a user is logged on.
+ */
+function local_analytics_extend_navigation_user() {
+    injector::inject();
+}
+
+/**
+ * Proposed in MDL-53978.
+ *
+ * We are not using all callbacks provided there because the one below would cover all cases.
+ * If approved, this would be the only needed callback, the others would provide legacy support.
+ */
+function tool_callbacktest_before_http_headers() {
+    injector::inject();
+}
