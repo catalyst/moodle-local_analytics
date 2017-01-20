@@ -26,30 +26,43 @@
 
 namespace local_analytics;
 
+use advanced_testcase;
+use context_course;
+use context_system;
+use core\session\manager;
+use local_analytics\dimension\context;
+use local_analytics\dimension\course_category_hierarchy_full_path;
+use local_analytics\dimension\course_enrolment_method;
+use local_analytics\dimension\course_full_name;
+use local_analytics\dimension\course_id_number;
+use local_analytics\dimension\course_short_name;
+use local_analytics\dimension\is_on_bundoora_campus;
+use local_analytics\dimension\user_department;
+use local_analytics\dimension\user_email_domain;
+use local_analytics\dimension\user_name;
+use local_analytics\dimension\user_profile_field_faculty_cost_code;
+use local_analytics\dimension\user_role;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-require_once($CFG->libdir . '/coursecatlib.php');
-
+require_once($CFG->libdir.'/coursecatlib.php');
 
 /**
  * Class local_analytics_dimensions_testcase
  */
-class local_analytics_dimensions_values_testcase extends \advanced_testcase
-{
-
+class local_analytics_dimensions_values_testcase extends advanced_testcase {
     /**
      * Setup test data.
      */
-    public function setUp()
-    {
+    public function setUp() {
         global $COURSE, $USER;
 
         $this->resetAfterTest();
         $this->setAdminUser();
 
-        \local_analytics\dimensions::instantiate_plugins();
+        dimensions::instantiate_plugins();
 
         $COURSE->fullname = "I'm a course";
         $COURSE->idnumber = "9642";
@@ -73,17 +86,13 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
      * GIVEN the context dimension plugin
      * WHEN its value function is invoked
      * THEN the result should be the context name associated with the current $COURSE.
-     *
-     * @test
      */
-    public function contextPluginReturnsCourseContextName()
-    {
-        $instance = new \local_analytics\dimension\context();
+    public function test_context_plugin_returns_course_context_name() {
+        $instance = new context();
         $actual = $instance->value();
 
         $expected = "Front page";
         $this->assertEquals($expected, $actual);
-
     }
 
     /**
@@ -92,29 +101,26 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
      * GIVEN the course category dimension plugin
      * WHEN its value function is invoked
      * THEN the result should be the full hierachy associated with the current $COURSE.
-     *
-     * @test
      */
-    public function courseHierachyPluginReturnsCourseCategoryPath()
-    {
+    public function test_course_hierachy_plugin_returns_course_category_path() {
         global $COURSE;
 
-        $instance = new \local_analytics\dimension\course_category_hierarchy_full_path();
+        $instance = new course_category_hierarchy_full_path();
         $actual = $instance->value();
 
         // Front page has no parents so result is False.
         $this->assertFalse($actual);
 
         // Create a set of nested categories.
-        $category1 = \coursecat::create(array('name' => 'Top'));
-        $category2 = \coursecat::create(array('name' => 'Middle', 'parent' => $category1->id));
-        $category3 = \coursecat::create(array('name' => 'Bottom', 'parent' => $category2->id));
+        $category1 = \coursecat::create(['name' => 'Top']);
+        $category2 = \coursecat::create(['name' => 'Middle', 'parent' => $category1->id]);
+        $category3 = \coursecat::create(['name' => 'Bottom', 'parent' => $category2->id]);
 
-        $COURSE = $this->getDataGenerator()->create_course(array('category' => $category3->id));
+        $COURSE = $this->getDataGenerator()->create_course(['category' => $category3->id]);
 
         $actual = $instance->value();
 
-        $expected = "Top\Middle\Bottom";
+        $expected = 'Top\Middle\Bottom';
         $this->assertEquals($expected, $actual);
     }
 
@@ -124,14 +130,11 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
      * GIVEN the course enrolment method dimension plugin
      * WHEN its value function is invoked
      * THEN the result should be the enrolment method providing access to the user to the current $COURSE.
-     *
-     * @test
      */
-    public function courseEnrolmentMethodPluginReturnsEnrolmentMethod()
-    {
+    public function test_course_enrolment_method_plugin_returns_enrolment_method() {
         global $USER, $COURSE, $DB;
 
-        $instance = new \local_analytics\dimension\course_enrolment_method();
+        $instance = new course_enrolment_method();
 
         // Front page - everyone is enrolled and method is False.
         $actual = $instance->value();
@@ -139,20 +142,20 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
 
         $COURSE = $this->getDataGenerator()->create_course();
 
-        $studentrole = $DB->get_record('role', array('shortname'=>'student'));
+        $studentrole = $DB->get_record('role', ['shortname' => 'student']);
         $this->assertNotEmpty($studentrole);
 
         $this->getDataGenerator()->enrol_user($USER->id, $COURSE->id, $studentrole->id, 'manual', 0, 9876543210);
         $actual = $instance->value();
         $this->assertEquals('manual', $actual);
 
-        // Unenrol
-        $manual = $DB->get_record('enrol', array('courseid' => $COURSE->id, 'enrol' => 'manual'), '*', MUST_EXIST);
+        // Unenrol.
+        $manual = $DB->get_record('enrol', ['courseid' => $COURSE->id, 'enrol' => 'manual'], '*', MUST_EXIST);
         enrol_get_plugin('manual')->unenrol_user($manual, $USER->id);
         $actual = $instance->value();
         $this->assertFalse($actual);
 
-        // Broken enrolment (self enrolment isn't enabled yet)
+        // Broken enrolment (self enrolment isn't enabled yet).
         $selfplugin = enrol_get_plugin('self');
         $this->assertNotEmpty($selfplugin);
         $this->assertTrue(enrol_is_enabled('self'));
@@ -160,9 +163,9 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
         $actual = $instance->value();
         $this->assertFalse($actual);
 
-        // Enable the self enrolment plugin for this course and it starts working :)
-        $selfInstance = $DB->get_record('enrol', array('courseid'=>$COURSE->id, 'enrol'=>'self'), '*', MUST_EXIST);
-        $selfplugin->update_status($selfInstance, ENROL_INSTANCE_ENABLED);
+        // Enable the self enrolment plugin for this course and it starts working :) .
+        $selfinstance = $DB->get_record('enrol', ['courseid' => $COURSE->id, 'enrol' => 'self'], '*', MUST_EXIST);
+        $selfplugin->update_status($selfinstance, ENROL_INSTANCE_ENABLED);
         $actual = $instance->value();
         $this->assertEquals('self', $actual);
     }
@@ -173,12 +176,9 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
      * GIVEN the course full name dimension plugin
      * WHEN its value function is invoked
      * THEN the result should be the full name of the current $COURSE.
-     *
-     * @test
      */
-    public function courseFullNamePluginReturnsCourseFullName()
-    {
-        $instance = new \local_analytics\dimension\course_full_name();
+    public function test_course_full_name_plugin_returns_course_full_name() {
+        $instance = new course_full_name();
         $actual = $instance->value();
 
         $expected = "I'm a course";
@@ -191,12 +191,9 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
      * GIVEN the course ID number dimension plugin
      * WHEN its value function is invoked
      * THEN the result should be the ID number of the current $COURSE.
-     *
-     * @test
      */
-    public function courseIdNumberPluginReturnsCourseIdNumber()
-    {
-        $instance = new \local_analytics\dimension\course_id_number();
+    public function test_course_id_number_plugin_returns_course_id_number() {
+        $instance = new course_id_number();
         $actual = $instance->value();
 
         $expected = "9642";
@@ -209,12 +206,9 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
      * GIVEN the course short name dimension plugin
      * WHEN its value function is invoked
      * THEN the result should be the short name of the current $COURSE.
-     *
-     * @test
      */
-    public function courseShortNamePluginReturnsCourseShortName()
-    {
-        $instance = new \local_analytics\dimension\course_short_name();
+    public function test_course_short_name_plugin_returns_course_short_name() {
+        $instance = new course_short_name();
         $actual = $instance->value();
 
         $expected = "Hat on cat";
@@ -227,14 +221,11 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
      * GIVEN the is_on_bundoora_campus dimension plugin
      * WHEN its value function is invoked
      * THEN the result should be a boolean indicating whether the current IP address is within IP ranges set.
-     *
-     * @test
      */
-    public function isOnBundooraCampusPluginReturnsWhetherAtBundoora()
-    {
+    public function test_is_on_bundoora_campus_plugin_returns_whether_at_bundoora() {
         global $CFG, $_SERVER;
 
-        $instance = new \local_analytics\dimension\is_on_bundoora_campus();
+        $instance = new is_on_bundoora_campus();
 
         unset($CFG->bundoora_campus_ips);
         $actual = $instance->value();
@@ -258,11 +249,8 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
      * GIVEN the is_on_campus dimension plugin
      * WHEN its value function is invoked
      * THEN the result should be a boolean indicating whether the current IP address is within IP ranges set.
-     *
-     * @test
      */
-    public function isOnCampusPluginReturnsWhetherAtACampus()
-    {
+    public function is_on_campus_plugin_returns_whether_at_a_campus() {
         global $CFG, $_SERVER;
 
         $instance = new \local_analytics\dimension\is_on_campus();
@@ -299,14 +287,11 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
      * GIVEN the user department dimension plugin
      * WHEN its value function is invoked
      * THEN the result should be the user's Department profile field.
-     *
-     * @test
      */
-    public function userDepartmentPluginReturnsUserDepartment()
-    {
+    public function test_user_department_plugin_returns_user_department() {
         global $USER;
 
-        $instance = new \local_analytics\dimension\user_department();
+        $instance = new user_department();
         $actual = $instance->value();
 
         $expected = "Null void";
@@ -325,14 +310,11 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
      * GIVEN the user email domain dimension plugin
      * WHEN its value function is invoked
      * THEN the result should be the domain portion of the user's email address.
-     *
-     * @test
      */
-    public function userEmailDomainPluginReturnsUserEmailDomain()
-    {
+    public function test_user_email_domain_plugin_returns_user_email_domain() {
         global $USER;
 
-        $instance = new \local_analytics\dimension\user_email_domain();
+        $instance = new user_email_domain();
         $actual = $instance->value();
 
         $expected = "nowhere.null";
@@ -351,11 +333,8 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
      * GIVEN the user institution dimension plugin
      * WHEN its value function is invoked
      * THEN the result should be the user's institution profile field.
-     *
-     * @test
      */
-    public function userInsitutionPluginReturnsUserInsitution()
-    {
+    public function test_user_insitution_plugin_returns_user_insitution() {
         global $USER;
 
         $instance = new \local_analytics\dimension\user_institution();
@@ -377,14 +356,11 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
      * GIVEN the user name dimension plugin
      * WHEN its value function is invoked
      * THEN the result should be the user's name.
-     *
-     * @test
      */
-    public function userNamePluginReturnsUserName()
-    {
+    public function test_user_name_plugin_returns_user_name() {
         global $USER;
 
-        $instance = new \local_analytics\dimension\user_name();
+        $instance = new user_name();
         $actual = $instance->value();
 
         $expected = "Kevin 11";
@@ -396,15 +372,15 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
 
         // Try admin loginas this user in system context.
         $this->assertObjectNotHasAttribute('realuser', $USER);
-        \core\session\manager::loginas($user->id, \context_system::instance());
+        manager::loginas($user->id, context_system::instance());
 
         // Should return admin user details.
-        set_config('local_analytics', TRUE, 'masquerade_handling');
+        set_config('local_analytics', true, 'masquerade_handling');
         $actual = $instance->value();
         $this->assertEquals($expected, $actual);
 
         // Shouldn't return admin user details.
-        set_config('masquerade_handling', FALSE, 'local_analytics', FALSE);
+        set_config('masquerade_handling', false, 'local_analytics');
         $actual = $instance->value();
         $this->assertNotEquals($expected, $actual);
     }
@@ -415,14 +391,11 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
      * GIVEN the user profile field faculty cost code dimension plugin
      * WHEN its value function is invoked
      * THEN the result should be the user's faculty cost code profile field.
-     *
-     * @test
      */
-    public function userFacultyCostCodePluginReturnsUserFacultyCostCode()
-    {
+    public function test_user_faculty_cost_code_plugin_returns_user_faculty_cost_code() {
         global $USER;
 
-        $instance = new \local_analytics\dimension\user_profile_field_faculty_cost_code();
+        $instance = new user_profile_field_faculty_cost_code();
         $actual = $instance->value();
 
         $expected = "Foo";
@@ -439,14 +412,11 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
      * GIVEN the user role dimension plugin
      * WHEN its value function is invoked
      * THEN the result should be the user's current role.
-     *
-     * @test
      */
-    public function userRolePluginReturnsUserRole()
-    {
+    public function test_user_role_plugin_returns_user_role() {
         global $COURSE, $USER;
 
-        $instance = new \local_analytics\dimension\user_role();
+        $instance = new user_role();
         $actual = $instance->value();
 
         $expected = "Admin";
@@ -461,12 +431,11 @@ class local_analytics_dimensions_values_testcase extends \advanced_testcase
         // Test a user with multiple roles.
         $id = create_role('New role', 'test2', 'New test role', 'student');
         $id2 = create_role('New role 2', 'test3', 'New test role 2', 'student');
-        \role_assign($id, $USER->id, \context_course::instance($COURSE->id));
-        \role_assign($id2, $USER->id, \context_course::instance($COURSE->id));
+        \role_assign($id, $USER->id, context_course::instance($COURSE->id));
+        \role_assign($id2, $USER->id, context_course::instance($COURSE->id));
 
         $actual = $instance->value();
         $expected = "New role, New role 2";
         $this->assertEquals($expected, $actual);
     }
-
 }

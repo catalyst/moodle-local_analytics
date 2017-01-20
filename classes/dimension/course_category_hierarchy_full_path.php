@@ -1,23 +1,38 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
- * @file
  * Course name dimension definition.
  */
-
 namespace local_analytics\dimension;
 
-require_once 'dimension_interface.php';
+defined('MOODLE_INTERNAL') || die;
+
+require_once(__DIR__.'/dimension_interface.php');
 
 class course_category_hierarchy_full_path implements dimension_interface {
     /**
      * Name of dimension - used in lang plugin and arrays.
      */
-    static $name = 'course_category_hierarchy_full_path';
+    public static $name = 'course_category_hierarchy_full_path';
 
     /**
      * Scope of the dimension.
      */
-    static $scope = 'action';
+    public static $scope = 'action';
 
     /**
      * Get the value for js to send.
@@ -39,8 +54,8 @@ class course_category_hierarchy_full_path implements dimension_interface {
 
         $result = '';
 
-        foreach($parents as $key => $content) {
-            $result .= '\\' . $content->get_context_name(false);
+        foreach ($parents as $content) {
+            $result .= '\\'.$content->get_context_name(false);
         }
 
         $result = substr($result, 1);

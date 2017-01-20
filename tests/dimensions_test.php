@@ -26,27 +26,21 @@
 
 namespace local_analytics;
 
-use local_analytics\dimension;
+use advanced_testcase;
+use local_analytics\dimension\dimension_interface;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class local_analytics_dimensions_testcase
  */
-class local_analytics_dimensions_testcase extends \advanced_testcase
-{
-
+class local_analytics_dimensions_testcase extends advanced_testcase {
     /**
      * Setup test data.
      */
-    public function setUp()
-    {
-        global $CFG;
-
+    public function setUp() {
         $this->resetAfterTest();
         $this->setAdminUser();
-
-// 		set_config('location', 'header', 'local_analytics');
     }
 
     /**
@@ -55,15 +49,12 @@ class local_analytics_dimensions_testcase extends \advanced_testcase
      * GIVEN the dimensions class
      * WHEN its instantiate_plugins function is invoked
      * THEN the result should be an array of plugin instances
-     *
-     * @test
      */
-    public function instantiatePluginsReturnsArrayOfPlugins()
-    {
+    public function test_instantiate_plugins_returns_array_of_plugins() {
         $plugins = dimensions::instantiate_plugins();
 
-        foreach ($plugins as $scope => $scope_plugins) {
-            foreach ($scope_plugins as $name => $plugin) {
+        foreach ($plugins as $scopeplugins) {
+            foreach ($scopeplugins as $name => $plugin) {
                 $this->assertInstanceOf($name, $plugin);
             }
         }
@@ -75,17 +66,14 @@ class local_analytics_dimensions_testcase extends \advanced_testcase
      * GIVEN the array of plugin instances returned by instantiate_plugins
      * WHEN each is checked
      * THEN it should implement the dimension interface.
-     *
-     * @test
      */
-    public function instantiatedPluginsImplementInterface()
-    {
+    public function test_instantiated_plugins_implement_interface() {
         $plugins = dimensions::instantiate_plugins();
 
-        foreach ($plugins as $scope => $scope_plugins) {
-            foreach ($scope_plugins as $name => $plugin) {
-                $this->assertTrue($plugin instanceOf \local_analytics\dimension\dimension_interface, "The ${name} plugin doesn't
-                implement the dimension interface");
+        foreach ($plugins as $scopeplugins) {
+            foreach ($scopeplugins as $name => $plugin) {
+                $this->assertTrue($plugin instanceOf dimension_interface,
+                                  "The {$name} plugin doesn't implement the dimension interface");
             }
         }
     }
@@ -100,38 +88,34 @@ class local_analytics_dimensions_testcase extends \advanced_testcase
      * GIVEN a file in the plugins directory not having a class that matches the filename
      * WHEN the instantiate_plugins function tries to use it
      * THEN it should generate a debugging message about the issue.
-     *
-     * @test
      */
-    public function settingOptionsReturnsExpectedValues()
-    {
+    public function test_setting_options_returns_expected_values() {
         $actual = dimensions::setting_options('visit');
-        $expected = array(
-            '' => '',
-            'is_on_bundoora_campus' => 'User is on Bundoora campus network',
-            'is_on_campus' => 'User is on campus',
-            'user_department' => 'User department',
-            'user_email_domain' => 'User email domain',
-            'user_institution' => 'User institution',
-            'user_name' => 'User name',
+        $expected = [
+            ''                                     => '',
+            'is_on_bundoora_campus'                => 'User is on Bundoora campus network',
+            'is_on_campus'                         => 'User is on campus',
+            'user_department'                      => 'User department',
+            'user_email_domain'                    => 'User email domain',
+            'user_institution'                     => 'User institution',
+            'user_name'                            => 'User name',
             'user_profile_field_faculty_cost_code' => 'Faculty cost code user profile field',
-        );
+        ];
 
         $this->assertSame($expected, $actual);
 
         $actual = dimensions::setting_options('action');
-        $expected = array (
-            '' => '',
-            'context' => 'Context',
+        $expected = [
+            ''                                    => '',
+            'context'                             => 'Context',
             'course_category_hierarchy_full_path' => 'Course category hierarchy full path',
-            'course_enrolment_method' => 'Course enrolment method',
-            'course_full_name' => 'Course full name',
-            'course_id_number' => 'Course ID number',
-            'course_short_name' => 'Course short name',
-            'user_role' => 'User role',
-        );
+            'course_enrolment_method'             => 'Course enrolment method',
+            'course_full_name'                    => 'Course full name',
+            'course_id_number'                    => 'Course ID number',
+            'course_short_name'                   => 'Course short name',
+            'user_role'                           => 'User role',
+        ];
 
         $this->assertSame($expected, $actual);
     }
-
 }
