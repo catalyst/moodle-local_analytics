@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/analytics" VERSION="2017030100" COMMENT="XMLDB file for Moodle local/analytics"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="local_analytics" COMMENT="This table saves information about an instance of analytics">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Enable Analytics"/>
+        <FIELD NAME="type" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="A type of Analytics"/>
+        <FIELD NAME="siteid" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Site ID of Analytics"/>
+        <FIELD NAME="usedimensions" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Use custom dimensions rather than custom variables."/>
+        <FIELD NAME="imagetrack" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Enable Image Tracking for Moodle for browsers with JavaScript disabled"/>
+        <FIELD NAME="trackadmin" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Enable tracking of Admin users "/>
+        <FIELD NAME="masquerade_handling" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether to track users who are masquerading as other users or are using a modified role. "/>
+        <FIELD NAME="cleanurl" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Generate clean URL for in advanced tracking"/>
+        <FIELD NAME="siteurl" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Analytics URL without http(s) or a trailing slash (for Google Analytics types leave empty)"/>
+        <FIELD NAME="dimensions" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Serialized Dimensions settings used for Analytic"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="The unique id."/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
