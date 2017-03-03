@@ -36,7 +36,17 @@ use moodleform;
 class edit extends moodleform {
 
     /**
+     * Return form object.
+     *
+     * @return \MoodleQuickForm
+     */
+    public function get_form() {
+        return $this->_form;
+    }
+
+    /**
      * {@inheritDoc}
+     *
      * @see moodleform::definition()
      */
     public function definition() {
@@ -67,9 +77,9 @@ class edit extends moodleform {
         $mform->addElement('checkbox', 'trackadmin', get_string('trackadmin', 'local_analytics'));
         $mform->addHelpButton('trackadmin', 'trackadmin', 'local_analytics');
 
-        $mform->addElement('checkbox', 'masquerade_handling', get_string('masquerade_handling', 'local_analytics'));
-        $mform->addHelpButton('masquerade_handling', 'masquerade_handling', 'local_analytics');
-        $mform->setDefault('masquerade_handling', 1);
+        $mform->addElement('checkbox', 'masqueradehandling', get_string('masqueradehandling', 'local_analytics'));
+        $mform->addHelpButton('masqueradehandling', 'masqueradehandling', 'local_analytics');
+        $mform->setDefault('masqueradehandling', 1);
 
         $mform->addElement('checkbox', 'cleanurl', get_string('cleanurl', 'local_analytics'));
         $mform->addHelpButton('cleanurl', 'cleanurl', 'local_analytics');
@@ -94,6 +104,98 @@ class edit extends moodleform {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @see moodleform::validation()
+     */
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+
+        if ($data['type'] == 'piwik') {
+            if (empty($data['siteurl'])) {
+                $errors['siteurl'] = 'You must provide Piwik site URL.';
+            } else {
+                if (empty(clean_param($data['siteurl'], PARAM_URL))) {
+                    $errors['siteurl'] = 'You must provide valid Piwik site URL.';
+                }
+
+                if (preg_match("^(http|https)://", $data['siteurl'])) {
+                    $errors['siteurl'] = 'Please provide URL without http(s).';
+                }
+
+                if (substr(trim($data['siteurl']), -1) == '/') {
+                    $errors['siteurl'] = 'Please provide URL without a trailing slash';
+                }
+            }
+        }
+
+        // TODO: check if we have the same record.
+
+        return $errors;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see moodleform::get_data()
+     */
+    public function get_data() {
+        $data = parent::get_data();
+
+        if (!empty($data)) {
+            $data->dimensions = array();
+
+            $plugins = dimensions::instantiate_plugins();
+
+            foreach ($plugins as $scope => $scopeplugins) {
+                if (isset($data->$scope) && !empty($data->$scope)) {
+                    $dimensionidkey = 'dimensionid_' . $scope;
+                    $dimensioncontentkey = 'dimensioncontent_' . $scope;
+                    $dimensiondeletekey = 'delete_' . $scope;
+
+                    $numberofdimensions = $data->$scope;
+
+
+                    if (isset($data->$dimensionidkey) && isset($data->$dimensioncontentkey)) {
+                        for ($i = 0; $i < $numberofdimensions; $i++) {
+
+                            if (!empty($data->{$dimensionidkey}[$i]) && !isset($data->{$dimensiondeletekey}[$i])) {
+                                if (!isset($data->dimensions[$scope])) {
+                                    $data->dimensions[$scope] = array();
+                                }
+
+                                $data->dimensions[$scope][] = array(
+                                    'id' => $data->{$dimensionidkey}[$i],
+                                    'content' => $data->{$dimensioncontentkey}[$i],
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see moodleform::definition_after_data()
+     */
+    public function definition_after_data() {
+        parent::definition_after_data();
+
+        $mform = $this->_form;
+
+        $id = $mform->getElementValue('id');
+
+        if (!empty($id)) {
+            $mform->freeze(array('type'));
+        }
+    }
+
+    /**
      * Add custom dimension fields to the form.
      *
      * @throws \coding_exception
@@ -113,10 +215,22 @@ class edit extends moodleform {
 
             $dimensionidkey = 'dimensionid_' . $scope;
             $dimensioncontentkey = 'dimensioncontent_' . $scope;
+            $dimensiondeletekey = 'delete_' . $scope;
+            $currentdimensions = array();
+
+            if (!empty($this->_customdata)) {
+                if (isset($this->_customdata[$scope]) && !empty($this->_customdata[$scope])) {
+                    foreach ($this->_customdata[$scope] as $default) {
+                        $currentdimensions[] = $default;
+                    }
+                }
+            }
+
+            $currentnum = count($currentdimensions);
 
             $elementobjs[$scope][] = $mform->createElement('html', '<hr>');
 
-            $repeatoptions[][$dimensionidkey]['type'] = PARAM_TEXT;
+            $repeatoptions[$scope][$dimensionidkey]['type'] = PARAM_TEXT;
             $repeatoptions[$scope][$dimensionidkey]['disabledif'] = array('type', 'neq', 'piwik');
             $elementobjs[$scope][] = $mform->createElement('text',
                 $dimensionidkey,
@@ -131,10 +245,26 @@ class edit extends moodleform {
                 $choices
             );
 
+            $elementobjs[$scope][] = $mform->createElement('checkbox',
+                $dimensiondeletekey,
+                get_string('delete')
+            );
+
             $addtext = get_string('adddimension', 'local_analytics', $scope);
             $addname = $scope . '_add';
 
-            $this->repeat_elements($elementobjs[$scope], 0, $repeatoptions[$scope], $scope, $addname, 1, $addtext, false);
+            $this->repeat_elements($elementobjs[$scope], $currentnum, $repeatoptions[$scope], $scope, $addname, 1, $addtext, false);
+
+            if ($currentnum > 0) {
+                foreach ($currentdimensions as $key => $currentdimension) {
+                    $mform->setDefault($dimensionidkey . "[{$key}]", $currentdimension['id']);
+                    $mform->setDefault($dimensioncontentkey . "[{$key}]", $currentdimension['content']);
+                    $mform->setType($dimensionidkey . "[{$key}]", PARAM_TEXT);
+                    $mform->setType($dimensioncontentkey . "[{$key}]", PARAM_TEXT);
+
+                }
+            }
+
             $this->disable_element_if_not_piwik($addname);
         }
     }

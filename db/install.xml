@@ -13,7 +13,7 @@
         <FIELD NAME="usedimensions" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Use custom dimensions rather than custom variables."/>
         <FIELD NAME="imagetrack" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Enable Image Tracking for Moodle for browsers with JavaScript disabled"/>
         <FIELD NAME="trackadmin" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Enable tracking of Admin users "/>
-        <FIELD NAME="masquerade_handling" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether to track users who are masquerading as other users or are using a modified role. "/>
+        <FIELD NAME="masqueradehandling" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether to track users who are masquerading as other users or are using a modified role. "/>
         <FIELD NAME="cleanurl" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Generate clean URL for in advanced tracking"/>
         <FIELD NAME="siteurl" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Analytics URL without http(s) or a trailing slash (for Google Analytics types leave empty)"/>
         <FIELD NAME="dimensions" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Serialized Dimensions settings used for Analytic"/>

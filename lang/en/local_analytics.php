@@ -34,11 +34,11 @@ $string['siteid_help'] = 'Enter your Site ID or Google Analytics';
 $string['siteurl'] = 'Analytics URL';
 $string['siteurl_help'] = 'Enter your Piwik Analytics URL without http(s) or a trailing slash (for both Google Analytics types leave empty)';
 $string['enabled'] = 'Enabled';
-$string['enabled_helpc'] = 'Enable Analytics for Moodle';
+$string['enabled_help'] = 'Enable Analytics for Moodle';
 $string['imagetrack'] = 'Image Tracking';
+$string['imagetrack_help'] = 'Enable Image Tracking for Moodle for browsers with JavaScript disabled (only for Piwik)';
 $string['cleanurl'] = 'Clean URLs';
 $string['cleanurl_help'] = 'Generate clean URL for in advanced tracking';
-$string['imagetrack_help'] = 'Enable Image Tracking for Moodle for browsers with JavaScript disabled (only for Piwik)';
 $string['trackadmin'] = 'Tracking Admins';
 $string['trackadmin_help'] = 'Enable tracking of Admin users (not recommended)';
 $string['view'] = 'View';
@@ -48,23 +48,18 @@ $string['ganalytics'] = 'Google Analytics (deprecated)';
 $string['guniversal'] = 'Google Universal Analytics';
 $string['location'] = 'Tracking code location';
 $string['locationdesc'] = 'The place on the page where you want to place the code, header will yield the most reliable results, but footer gives the best performance. If you do not get correct results in Google/Piwik set this to "Header"';
-$string['masquerade_handling'] = 'Track masquerading users';
-$string['masquerade_handling_help'] = 'Whether to track users who are masquerading as other users or are using a modified role. The default (unchecked) is to not include them in tracking data.';
+$string['masqueradehandling'] = 'Track masquerading users';
+$string['masqueradehandling_help'] = 'Whether to track users who are masquerading as other users or are using a modified role. The default (unchecked) is to not include them in tracking data.';
 $string['head'] = 'Header';
 $string['topofbody'] = 'Top of body';
 $string['footer'] = 'Footer';
-
 $string['usedimensions'] = 'Piwik custom dimensions';
 $string['usedimensions_help'] = 'Use custom dimensions for Piwik rather than custom variables.';
-
 $string['dimensionid'] = 'Piwik dimension ID for {$a} scope';
 $string['dimensionid_help'] = 'Dimension ID in {$a} scope. If the dimension is used, this ID is required.';
-
 $string['dimensioncontent'] = 'Dimension value for {$a} scope';
 $string['dimensionid_help'] = 'Dimension ID in {$a} scope. If the dimension is used, this ID is required.';
-
 $string['adddimension'] = 'Add 1 more dimension for {$a} scope';
-
 $string['course_full_name'] = 'Course full name';
 $string['course_short_name'] = 'Course short name';
 $string['course_id_number'] = 'Course ID number';
@@ -79,3 +74,13 @@ $string['user_institution'] = 'User institution';
 $string['is_on_campus'] = 'User is on campus';
 $string['is_on_bundoora_campus'] = 'User is on Bundoora campus network';
 $string['user_profile_field_faculty_cost_code'] = 'Faculty cost code user profile field';
+$string['edit_breadcrumb'] = 'Edit analytics';
+$string['create_breadcrumb'] = 'Create analytics';
+$string['delete_breadcrumb'] = 'Delete analytics';
+$string['edit_heading'] = 'Edit analytics';;
+$string['create_heading'] = 'Create analytics';
+$string['delete_heading'] = 'Delete analytics';
+$string['delete_confirm'] = 'Are you sure you want to delete Analytics with ID {$a}?';
+$string['manage_heading'] = 'Manage Analytics';
+$string['not_found'] = 'Analytics not found';
+$string['no_analytics'] = 'No Analytics found.';

@@ -45,7 +45,7 @@ function xmldb_local_analytics_upgrade($oldversion) {
         $table->add_field('usedimensions', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
         $table->add_field('imagetrack', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
         $table->add_field('trackadmin', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('masquerade_handling', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('masqueradehandling', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
         $table->add_field('cleanurl', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
         $table->add_field('siteurl', XMLDB_TYPE_CHAR, '255');
         $table->add_field('dimensions', XMLDB_TYPE_TEXT);
@@ -56,6 +56,8 @@ function xmldb_local_analytics_upgrade($oldversion) {
             $dbman->drop_table($table);
         }
         $dbman->create_table($table);
+
+        // TODO: do we want migrate the old config data and do some cleanup? I think so.
 
         upgrade_plugin_savepoint(true, 2017030100, 'local', 'analytics');
     }
