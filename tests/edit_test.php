@@ -55,7 +55,7 @@ class edit_test extends advanced_testcase {
 
         $this->data = array(
             'id' => 3,
-            'enabled' => 0,
+            'enabled' => false,
             'type' => 'piwik',
             'siteid' => 'siteID',
             'trackadmin' => 1,
@@ -122,8 +122,6 @@ class edit_test extends advanced_testcase {
      * @param mixed $value A default value of the field.
      */
     public function test_create_analytics_form_definition($fieldname, $exist, $type, $value) {
-        $this->form->definition();
-
         $actual = $this->form->get_form()->elementExists($fieldname);
 
         $this->assertEquals($exist, $actual);
@@ -142,22 +140,22 @@ class edit_test extends advanced_testcase {
      */
     public function test_edit_analytics_form_definition_data_provider() {
         return array(
-            array('id', true, 'hidden', $this->data['id']),
-            array('enabled', true, 'checkbox', $this->data['enabled']),
-            array('type', true, 'select', $this->data['type']),
-            array('siteid', true, 'text', $this->data['siteid']),
-            array('trackadmin', true, 'checkbox', $this->data['trackadmin']),
-            array('masqueradehandling', true, 'checkbox', $this->data['masqueradehandling']),
-            array('cleanurl', true, 'checkbox', $this->data['cleanurl']),
-            array('siteurl', true, 'text', $this->data['siteurl']),
-            array('imagetrack', true, 'checkbox', $this->data['imagetrack']),
-            array('usedimensions', true, 'checkbox', $this->data['usedimensions']),
+            array('id', true, 'hidden', 3),
+            array('enabled', true, 'checkbox', 0),
+            array('type', true, 'select', array('piwik')),
+            array('siteid', true, 'text', 'siteID'),
+            array('trackadmin', true, 'checkbox', 1),
+            array('masqueradehandling', true, 'checkbox', 0),
+            array('cleanurl', true, 'checkbox', 0),
+            array('siteurl', true, 'text', 'site URL'),
+            array('imagetrack', true, 'checkbox', 1),
+            array('usedimensions', true, 'checkbox', 1),
             array('dimensionid_action[0]', true, 'text', 'ID1'),
-            array('dimensioncontent_action[0]', true, 'select', 'Content 1'),
+            array('dimensioncontent_action[0]', true, 'select', array('Content 1')),
             array('dimensionid_action[1]', true, 'text', 'ID2'),
-            array('dimensioncontent_action[1]', true, 'select', 'Content 2'),
+            array('dimensioncontent_action[1]', true, 'select', array('Content 2')),
             array('dimensionid_visit[0]', true, 'text', 'ID3'),
-            array('dimensioncontent_visit[0]', true, 'select', 'Content 3'),
+            array('dimensioncontent_visit[0]', true, 'select', array('Content 3')),
             array('action_add', true, 'submit', 'Add 1 more dimension for action scope'),
             array('visit_add', true, 'submit', 'Add 1 more dimension for visit scope'),
         );
@@ -171,11 +169,11 @@ class edit_test extends advanced_testcase {
      * @param string $fieldname A name of the field.
      * @param bool $exist A result of checking if the field is exist.
      * @param string $type A type of the field.
+     * @param mixed $value A default value of the field.
      */
-    public function test_edit_analytics_form_definition($fieldname, $exist, $type) {
+    public function test_edit_analytics_form_definition($fieldname, $exist, $type, $value) {
         $this->form = new edit(null, $this->data['dimensions']);
         $this->form->set_data($this->data);
-        $this->form->definition();
 
         $actual = $this->form->get_form()->elementExists($fieldname);
 
@@ -183,6 +181,8 @@ class edit_test extends advanced_testcase {
         if ($actual == true) {
             $actualtype = $this->form->get_form()->getElement($fieldname)->getType();
             $this->assertEquals($type, $actualtype);
+            $actualvalue = $this->form->get_form()->getElement($fieldname)->getValue();
+            $this->assertEquals($value, $actualvalue);
         }
     }
 
