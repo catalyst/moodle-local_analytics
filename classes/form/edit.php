@@ -112,14 +112,14 @@ class edit extends moodleform {
         $errors = parent::validation($data, $files);
 
         if ($data['type'] == 'piwik') {
-            if (empty($data['siteurl'])) {
+            if (!isset($data['siteurl']) || empty($data['siteurl'])) {
                 $errors['siteurl'] = 'You must provide Piwik site URL.';
             } else {
                 if (empty(clean_param($data['siteurl'], PARAM_URL))) {
                     $errors['siteurl'] = 'You must provide valid Piwik site URL.';
                 }
 
-                if (preg_match("^(http|https)://", $data['siteurl'])) {
+                if (preg_match("/^(http|https):\/\//", $data['siteurl'])) {
                     $errors['siteurl'] = 'Please provide URL without http(s).';
                 }
 

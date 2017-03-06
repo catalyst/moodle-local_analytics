@@ -85,16 +85,18 @@ class edit_test extends advanced_testcase {
             ),
         );
         $this->form = new edit();
+        $this->form->definition_after_data();
+
 
         $this->resetAfterTest();
     }
 
     /**
-     * Data provider for test_new_analytics_form_definition.
+     * Data provider for test_create_analytics_form.
      *
      * @return array
      */
-    public function test_create_analytics_form_definition_data_provider() {
+    public function test_create_analytics_form_data_provider() {
         return array(
             array('id', true, 'hidden', null),
             array('enabled', true, 'checkbox', 1),
@@ -112,16 +114,16 @@ class edit_test extends advanced_testcase {
     }
 
     /**
-     * Test form definition when we create a new analytics.
+     * Test form when we create a new analytics.
      *
-     * @dataProvider test_create_analytics_form_definition_data_provider
+     * @dataProvider test_create_analytics_form_data_provider
      *
      * @param string $fieldname A name of the field.
      * @param bool $exist A result of checking if the field is exist.
      * @param string $type A type of the field.
      * @param mixed $value A default value of the field.
      */
-    public function test_create_analytics_form_definition($fieldname, $exist, $type, $value) {
+    public function test_create_analytics_form($fieldname, $exist, $type, $value) {
         $actual = $this->form->get_form()->elementExists($fieldname);
 
         $this->assertEquals($exist, $actual);
@@ -131,14 +133,18 @@ class edit_test extends advanced_testcase {
             $actualvalue = $this->form->get_form()->getElement($fieldname)->getValue();
             $this->assertEquals($value, $actualvalue);
         }
+
+        if ($fieldname == 'type') {
+            $this->assertFalse($this->form->get_form()->getElement($fieldname)->isFrozen());
+        }
     }
 
     /**
-     * Data provider for test_new_analytics_form_definition.
+     * Data provider for test_edit_analytics_form.
      *
      * @return array
      */
-    public function test_edit_analytics_form_definition_data_provider() {
+    public function test_edit_analytics_form_data_provider() {
         return array(
             array('id', true, 'hidden', 3),
             array('enabled', true, 'checkbox', 0),
@@ -162,18 +168,19 @@ class edit_test extends advanced_testcase {
     }
 
     /**
-     * Test form definition when we editing an analytics and dimensions are set.
+     * Test form when we editing an analytics.
      *
-     * @dataProvider test_edit_analytics_form_definition_data_provider
+     * @dataProvider test_edit_analytics_form_data_provider
      *
      * @param string $fieldname A name of the field.
      * @param bool $exist A result of checking if the field is exist.
      * @param string $type A type of the field.
      * @param mixed $value A default value of the field.
      */
-    public function test_edit_analytics_form_definition($fieldname, $exist, $type, $value) {
+    public function test_edit_analytics_form($fieldname, $exist, $type, $value) {
         $this->form = new edit(null, $this->data['dimensions']);
         $this->form->set_data($this->data);
+        $this->form->definition_after_data();
 
         $actual = $this->form->get_form()->elementExists($fieldname);
 
@@ -183,6 +190,51 @@ class edit_test extends advanced_testcase {
             $this->assertEquals($type, $actualtype);
             $actualvalue = $this->form->get_form()->getElement($fieldname)->getValue();
             $this->assertEquals($value, $actualvalue);
+        }
+
+        if ($fieldname == 'type') {
+            $this->assertTrue($this->form->get_form()->getElement($fieldname)->isFrozen());
+        }
+
+    }
+
+    /**
+     * A data provider for test_validation.
+     *
+     * @return array
+     */
+    public function validation_data_provider() {
+        return array(
+            array(array('type' => 'not piwik'), '', ''),
+            array(array('type' => 'piwik'), 'siteurl', 'You must provide Piwik site URL.'),
+            array(array('type' => 'piwik', 'siteurl' => '11111'), 'siteurl', 'You must provide valid Piwik site URL.'),
+            array(array('type' => 'piwik', 'siteurl' => 'test@ru.com'), 'siteurl', 'You must provide valid Piwik site URL.'),
+            array(array('type' => 'piwik', 'siteurl' => 'http://test.ru'), 'siteurl', 'Please provide URL without http(s).'),
+            array(array('type' => 'piwik', 'siteurl' => 'https://test.ru'), 'siteurl', 'Please provide URL without http(s).'),
+            array(array('type' => 'piwik', 'siteurl' => ' https://test.ru'), 'siteurl', 'You must provide valid Piwik site URL.'),
+            array(array('type' => 'piwik', 'siteurl' => 'test.ru/'), 'siteurl', 'Please provide URL without a trailing slash'),
+            array(array('type' => 'piwik', 'siteurl' => 'test.ru/ '), 'siteurl', 'Please provide URL without a trailing slash'),
+        );
+    }
+
+    /**
+     * Test form validation.
+     *
+     * @dataProvider validation_data_provider
+     *
+     * @param array $data Data array.
+     * @param string $errorkey A key to find in the errors array.
+     * @param string $errormessage An error message assosiated with the error key.
+     */
+    public function test_validation($data, $errorkey, $errormessage) {
+        $errors = $this->form->validation($data, array());
+
+        if (!empty($errorkey)) {
+            $this->assertTrue(array_key_exists($errorkey, $errors));
+        }
+
+        if (!empty($errormessage) && isset($errors[$errorkey])) {
+            $this->assertEquals($errormessage, $errors[$errorkey]);
         }
     }
 
