@@ -46,6 +46,13 @@ class edit_test extends advanced_testcase {
     protected $data;
 
     /**
+     * A list of known dimensions scopes.
+     *
+     * @var array
+     */
+    protected $knownscopes = array('action', 'visit');
+
+    /**
      * Initial set up.
      */
     public function setUp() {
@@ -236,6 +243,146 @@ class edit_test extends advanced_testcase {
         if (!empty($errormessage) && isset($errors[$errorkey])) {
             $this->assertEquals($errormessage, $errors[$errorkey]);
         }
+    }
+
+    /**
+     * Test build_dimensions on empty data.
+     */
+    public function test_build_dimensions_when_data_is_empty() {
+        $data = new stdClass();
+        $dimensions = $this->form->build_dimensions($data);
+        $this->assertTrue(is_array($dimensions));
+        $this->assertEmpty($dimensions);
+    }
+
+    /**
+     * Test build_dimensions on correct data, but incorrect scope.
+     */
+    public function test_build_dimensions_when_correct_data_but_incorrect_scope() {
+        $data = new stdClass();
+
+        $data->wrong_scope = 1;
+        $data->dimensionid_wrong_scope = array('ID1', 'ID2');
+        $data->dimensioncontent_wrong_scope = array('Content1', 'Content2');
+        $dimensions = $this->form->build_dimensions($data);
+        $this->assertTrue(is_array($dimensions));
+        $this->assertEmpty($dimensions);
+    }
+
+    /**
+     * Test build_dimensions on data where id parameter is broken.
+     */
+    public function test_build_dimensions_when_broken_id_data() {
+        $data = new stdClass();
+        foreach ($this->knownscopes as $scope) {
+            $dimensionidkey = 'dimensionid_broken_' . $scope;
+            $dimensioncontentkey = 'dimensioncontent_' . $scope;
+
+            $data->$scope = 2;
+            $data->$dimensionidkey = array('ID1', 'ID2');
+            $data->$dimensioncontentkey = array('Content1', 'Content2');
+        }
+        $dimensions = $this->form->build_dimensions($data);
+        $this->assertTrue(is_array($dimensions));
+        $this->assertEmpty($dimensions);
+    }
+
+    /**
+     * Test build_dimensions on data where content parameter is broken.
+     */
+    public function test_build_dimensions_when_broken_content_data() {
+        $data = new stdClass();
+
+        foreach ($this->knownscopes as $scope) {
+            $dimensionidkey = 'dimensionid_' . $scope;
+            $dimensioncontentkey = 'dimensioncontent_broken_' . $scope;
+
+            $data->$scope = 2;
+            $data->$dimensionidkey = array('ID1', 'ID2');
+            $data->$dimensioncontentkey = array('Content1', 'Content2');
+        }
+        $dimensions = $this->form->build_dimensions($data);
+        $this->assertTrue(is_array($dimensions));
+        $this->assertEmpty($dimensions);
+    }
+
+    /**
+     * Test build_dimensions on data correct data.
+     */
+    public function test_build_dimensions_when_all_data_is_correct() {
+        $data = new stdClass();
+
+        foreach ($this->knownscopes as $scope) {
+            $dimensionidkey = 'dimensionid_' . $scope;
+            $dimensioncontentkey = 'dimensioncontent_' . $scope;
+
+            $data->$scope = 2;
+            $data->$dimensionidkey = array('ID1', 'ID2');
+            $data->$dimensioncontentkey = array('Content1', 'Content2');
+        }
+
+        $expected = array(
+            'action' => array(
+                array(
+                    'id' => 'ID1',
+                    'content' => 'Content1',
+                ),
+                array(
+                    'id' => 'ID2',
+                    'content' => 'Content2',
+                ),
+            ),
+            'visit' => array(
+                array(
+                    'id' => 'ID1',
+                    'content' => 'Content1',
+                ),
+                array(
+                    'id' => 'ID2',
+                    'content' => 'Content2',
+                ),
+            ),
+        );
+
+        $dimensions = $this->form->build_dimensions($data);
+        $this->assertEquals($expected, $dimensions);
+    }
+
+    /**
+     * Test build_dimensions on data where some items were deleted.
+     */
+    public function test_build_dimensions_when_some_dimensions_are_deleted() {
+        $data = new stdClass();
+
+        foreach ($this->knownscopes as $scope) {
+            $dimensionidkey = 'dimensionid_' . $scope;
+            $dimensioncontentkey = 'dimensioncontent_' . $scope;
+
+            $data->$scope = 2;
+            $data->$dimensionidkey = array('ID1', 'ID2');
+            $data->$dimensioncontentkey = array('Content1', 'Content2');
+        }
+
+        $data->delete_visit = array(0 => 1);
+        $data->delete_action = array(1 => 1);
+
+        $expected = array(
+            'action' => array(
+                array(
+                    'id' => 'ID1',
+                    'content' => 'Content1',
+                ),
+            ),
+            'visit' => array(
+                array(
+                    'id' => 'ID2',
+                    'content' => 'Content2',
+                ),
+            ),
+        );
+
+        $dimensions = $this->form->build_dimensions($data);
+        $this->assertEquals($expected, $dimensions);
     }
 
 }

@@ -143,39 +143,59 @@ class edit extends moodleform {
         $data = parent::get_data();
 
         if (!empty($data)) {
-            $data->dimensions = array();
+            $data->dimensions = $this->build_dimensions($data);
+        }
 
-            $plugins = dimensions::instantiate_plugins();
+        return $data;
+    }
 
-            foreach ($plugins as $scope => $scopeplugins) {
-                if (isset($data->$scope) && !empty($data->$scope)) {
-                    $dimensionidkey = 'dimensionid_' . $scope;
-                    $dimensioncontentkey = 'dimensioncontent_' . $scope;
-                    $dimensiondeletekey = 'delete_' . $scope;
+    /**
+     * Build dimensions array from the form data.
+     *
+     * @param \stdClass $data Data object returned by get_data() function.
+     *
+     * @return array A list of dimensions keyed by scope.
+     */
+    public function build_dimensions(\stdClass $data) {
+        $dimensions = array();
+        $plugins = dimensions::instantiate_plugins();
 
-                    $numberofdimensions = $data->$scope;
+        foreach ($plugins as $scope => $scopeplugins) {
 
+            // Check if we are actually getting dimensions of the scope from the form.
+            if (isset($data->$scope) && !empty($data->$scope)) {
 
-                    if (isset($data->$dimensionidkey) && isset($data->$dimensioncontentkey)) {
-                        for ($i = 0; $i < $numberofdimensions; $i++) {
+                // Let's build required keys to access the values in the data.
+                $dimensionidkey = 'dimensionid_' . $scope;
+                $dimensioncontentkey = 'dimensioncontent_' . $scope;
+                $dimensiondeletekey = 'delete_' . $scope;
 
-                            if (!empty($data->{$dimensionidkey}[$i]) && !isset($data->{$dimensiondeletekey}[$i])) {
-                                if (!isset($data->dimensions[$scope])) {
-                                    $data->dimensions[$scope] = array();
-                                }
+                // How many dimensions of that scope was submitted?
+                $numberofdimensions = $data->$scope;
 
-                                $data->dimensions[$scope][] = array(
-                                    'id' => $data->{$dimensionidkey}[$i],
-                                    'content' => $data->{$dimensioncontentkey}[$i],
-                                );
+                if (isset($data->$dimensionidkey) && isset($data->$dimensioncontentkey)) {
+
+                    // Iterate through all dimensions of that scope.
+                    for ($i = 0; $i < $numberofdimensions; $i++) {
+
+                        // Check if the current dimension has id set and 'Delete" checkbox is not checked.
+                        if (!empty($data->{$dimensionidkey}[$i]) && !isset($data->{$dimensiondeletekey}[$i])) {
+
+                            if (!isset($dimensions[$scope])) {
+                                $dimensions[$scope] = array();
                             }
+
+                            $dimensions[$scope][] = array(
+                                'id' => $data->{$dimensionidkey}[$i],
+                                'content' => $data->{$dimensioncontentkey}[$i],
+                            );
                         }
                     }
                 }
             }
         }
 
-        return $data;
+        return $dimensions;
     }
 
     /**
