@@ -134,6 +134,28 @@ class base_table extends flexible_table {
         global $OUTPUT;
         $buttons = '';
 
+        // Enable/disable button if required.
+        if ($editdelete) {
+
+            $action = 'show';
+            $title = 'enable';
+
+            if ($analytics->get_property('enabled')) {
+                $action = 'hide';
+                $title = 'disable';
+            }
+
+            $buttons .= html_writer::link(
+                new moodle_url('/local/analytics/status.php', ['id' => $analytics->get_property('id')]),
+                html_writer::empty_tag('img', [
+                    'src' => $OUTPUT->pix_url('t/' . $action),
+                    'alt' => get_string($title),
+                    'class' => 'iconsmall',
+                ]),
+                ['title' => get_string($title)]
+            );
+        }
+
         // Edit button if required.
         if ($editdelete) {
             $buttons .= html_writer::link(
