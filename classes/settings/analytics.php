@@ -120,8 +120,8 @@ class analytics implements analytics_interface {
      * @throws coding_exception
      */
     public function __construct(stdClass $data) {
-        if (empty($data)) {
-            throw new coding_exception('Empty $data object is provided.', $data);
+        if (empty((array)$data)) {
+            throw new coding_exception('Empty $data object is provided for analytics class.');
         }
 
         foreach ($data as $name => $value) {
@@ -137,7 +137,7 @@ class analytics implements analytics_interface {
      * @return bool
      */
     public function is_enabled() {
-        return empty($this->get_property('enabled'));
+        return !empty($this->get_property('enabled'));
     }
 
     /**
