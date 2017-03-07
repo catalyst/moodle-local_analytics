@@ -86,7 +86,7 @@ class analytics_manager implements analytics_manager_interface {
      * @return array
      */
     public function get_enabled() {
-        return $this->get_multiple(array('enable' => 1));
+        return $this->get_multiple(array('enabled' => 1));
     }
 
     /**
