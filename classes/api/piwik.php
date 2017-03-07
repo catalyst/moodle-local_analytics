@@ -28,6 +28,7 @@
 namespace local_analytics\api;
 
 use local_analytics\dimensions;
+use local_analytics\settings\analytics_interface;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -57,7 +58,7 @@ EOD;
      * - http://piwik.org/docs/custom-variables/
      * https://piwik.org/faq/general/faq_21117/
      */
-    static public function insert_custom_moodle_variables() {
+    static public function insert_custom_moodle_variables(analytics_interface $analytics) {
         global $COURSE, $USER;
         $customvars = "";
         $context = \context_course::instance($COURSE->id);
@@ -123,11 +124,10 @@ EOD;
      * @return mixed
      *   Array containing the data if it's to be used, null otherwise.
      */
-    static public function get_dimension_values($scope, $index) {
+    static public function get_dimension_values($scope, $data) {
         $plugins = dimensions::instantiate_plugins();
 
-        $name = 'piwikdimensioncontent_'.$scope.'_'.$index;
-        $dimension = get_config('local_analytics', $name);
+        $dimension = $data['content'];
 
         if ($dimension == '') {
             return null;
@@ -141,11 +141,10 @@ EOD;
             return null;
         }
 
-        $name = 'piwikdimensionid_'.$scope.'_'.$index;
-        $dimensionid = get_config('local_analytics', $name);
+        $dimensionid = $data['id'];
 
         if ($dimensionid == '') {
-            debugging("Local Analytics Piwik dimension action plugin #".$index." has been chosen but no
+            debugging("Local Analytics Piwik dimension action plugin has been chosen but no
                         ID has been supplied.", DEBUG_NORMAL);
 
             return null;
@@ -168,13 +167,11 @@ EOD;
      * @return array
      *   An array of the details to pass to the renderer.
      */
-    static public function dimensions_for_scope($scope) {
-        $numdimensions = get_config('local_analytics', 'piwik_number_dimensions_'.$scope);
-
+    static public function dimensions_for_scope($scope, $dimensions) {
         $result = [];
 
-        for ($i = 1; $i <= $numdimensions; $i++) {
-            list($dimensionid, $dimension, $value) = self::get_dimension_values($scope, $i);
+        foreach ($dimensions as $data) {
+            list($dimensionid, $dimension, $value) = self::get_dimension_values($scope, $data);
 
             if (!$dimensionid || !$value) {
                 continue;
@@ -236,15 +233,18 @@ EOD;
      *
      * http://developer.piwik.org/guides/tracking-javascript-guide#custom-dimensions
      */
-    static public function insert_custom_moodle_dimensions() {
+    static public function insert_custom_moodle_dimensions(analytics_interface $analytics) {
 
         $plugins = dimensions::instantiate_plugins();
         $customvars = '';
+        $data = $analytics->get_property('dimensions');
 
         foreach (array_keys($plugins) as $scope) {
-            $dimensions = self::dimensions_for_scope($scope);
-            $renderer = "render_dimensions_for_${scope}_scope";
-            $customvars .= self::$renderer($dimensions);
+            if (isset($data[$scope]) && !empty($data[$scope])) {
+                $dimensions = self::dimensions_for_scope($scope, $data[$scope]);
+                $renderer = "render_dimensions_for_${scope}_scope";
+                $customvars .= self::$renderer($dimensions);
+            }
         }
 
         return $customvars;
@@ -260,22 +260,22 @@ EOD;
      * - http://piwik.org/docs/custom-variables/
      * https://piwik.org/faq/general/faq_21117/
      */
-    static public function local_insert_custom_moodle_vars() {
-        if (get_config('local_analytics', 'piwikusedimensions')) {
-            return self::insert_custom_moodle_dimensions();
+    static public function local_insert_custom_moodle_vars(analytics_interface $analytics) {
+        if ($analytics->get_property('usedimensions')) {
+            return self::insert_custom_moodle_dimensions($analytics);
         } else {
-            return self::insert_custom_moodle_variables();
+            return self::insert_custom_moodle_variables($analytics);
         }
     }
 
-    static public function insert_tracking() {
+    static public function insert_tracking(analytics_interface $analytics) {
         global $CFG, $USER;
 
-        $imagetrack = get_config('local_analytics', 'imagetrack');
-        $siteurl = get_config('local_analytics', 'siteurl');
-        $siteid = get_config('local_analytics', 'siteid');
-        $cleanurl = get_config('local_analytics', 'cleanurl');
-        $location = "additionalhtml".get_config('local_analytics', 'location');
+        $imagetrack = $analytics->get_property('imagetrack');
+        $siteurl = $analytics->get_property('siteurl');
+        $siteid = $analytics->get_property('siteid');
+        $cleanurl = $analytics->get_property('cleanurl');
+        $location = "additionalhtmlhead";
 
         if (!empty($siteurl)) {
             if ($imagetrack) {
@@ -290,12 +290,12 @@ EOD;
                 $doctitle = "";
             }
 
-            if (self::should_track()) {
+            if (self::should_track($analytics)) {
                 $CFG->$location .= "
     <!-- Start Piwik Code -->
     <script type='text/javascript'>
         var _paq = _paq || [];
-        ".$doctitle.self::local_insert_custom_moodle_vars()."
+        ".$doctitle.self::local_insert_custom_moodle_vars($analytics)."
         _paq.push(['setUserId', $USER->id]);
         _paq.push(['trackPageView']);
         _paq.push(['enableLinkTracking']);
