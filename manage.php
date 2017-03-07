@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_analytics\table\base_table;
+use local_analytics\table\analytics_table;
 use local_analytics\settings\analytics_manager;
 use local_analytics\settings\analytics;
 
@@ -52,7 +52,7 @@ if (!empty($records)) {
     foreach ($records as $record) {
         $analyticslist[] = new analytics($record);
     }
-    $table = new base_table();
+    $table = new analytics_table();
     $table->show_data($analyticslist);
     $table->finish_output();
 } else {
