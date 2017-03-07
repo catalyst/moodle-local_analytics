@@ -104,7 +104,7 @@ class base_table extends flexible_table {
      */
     protected function show_analytics(analytics_interface $analytics) {
 
-        if ($analytics->get_property('enabled')) {
+        if ($analytics->is_enabled()) {
             $class = '';
             $enabled = get_string('yes');
         } else {
@@ -140,7 +140,7 @@ class base_table extends flexible_table {
             $action = 'show';
             $title = 'enable';
 
-            if ($analytics->get_property('enabled')) {
+            if ($analytics->is_enabled()) {
                 $action = 'hide';
                 $title = 'disable';
             }
