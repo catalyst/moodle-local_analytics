@@ -27,15 +27,17 @@
  */
 namespace local_analytics\api;
 
+use local_analytics\settings\analytics_interface;
+
 defined('MOODLE_INTERNAL') || die();
 
 class guniversal extends AbstractLocalAnalytics {
-    static public function insert_tracking() {
+    static public function insert_tracking(analytics_interface $analytics) {
         global $CFG, $PAGE;
 
-        $siteid = get_config('local_analytics', 'siteid');
-        $cleanurl = get_config('local_analytics', 'cleanurl');
-        $location = "additionalhtml".get_config('local_analytics', 'location');
+        $siteid = $analytics->get_property('siteid');
+        $cleanurl = $analytics->get_property('cleanurl');
+        $location = "additionalhtmlhead";
 
         if ($cleanurl) {
             $addition = "{'hitType' : 'pageview',
@@ -46,7 +48,7 @@ class guniversal extends AbstractLocalAnalytics {
             $addition = "'pageview'";
         }
 
-        if (self::should_track()) {
+        if (self::should_track($analytics)) {
             $CFG->$location .= "
                 <script>
                 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

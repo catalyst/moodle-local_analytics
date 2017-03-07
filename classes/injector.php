@@ -23,6 +23,9 @@
 
 namespace local_analytics;
 
+use local_analytics\settings\analytics_manager;
+use local_analytics\settings\analytics;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -44,20 +47,25 @@ class injector {
         }
         self::$injected = true;
 
-        $engine = null;
+        $manager = new analytics_manager();
+        $records = $manager->get_all();
 
-        $enabled = get_config('local_analytics', 'enabled');
-        $analytics = get_config('local_analytics', 'analytics');
+        if (!empty($records)) {
+            foreach ($records as $record) {
+                $analytics = new analytics($record);
+                $type  = $analytics->get_property('type');
 
-        if ($enabled) {
-            $classname = "\\local_analytics\\api\\{$analytics}";
-            if (!class_exists($classname, true)) {
-                debugging("Local Analytics Module: Analytics setting '{$analytics}' doesn't map to a class name.");
-                return;
+                if ($analytics->is_enabled()) {
+                    $classname = "\\local_analytics\\api\\{$type}";
+                    if (!class_exists($classname, true)) {
+                        debugging("Local Analytics Module: Analytics setting '{$type}' doesn't map to a class name.");
+                        return;
+                    }
+
+                    $engine = new $classname;
+                    $engine::insert_tracking($analytics);
+                }
             }
-
-            $engine = new $classname;
-            $engine::insert_tracking();
         }
     }
 

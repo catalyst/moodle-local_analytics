@@ -19,6 +19,8 @@
  */
 namespace local_analytics\api;
 
+use local_analytics\settings\analytics_interface;
+
 defined('MOODLE_INTERNAL') || die();
 
 interface local_analytics_interface {
@@ -34,6 +36,8 @@ interface local_analytics_interface {
      * Insert tracking.
      *
      * Insert the tracking script in output variables.
+     *
+     * @param analytics_interface $analytics Analytics object.
      */
-    static public function insert_tracking();
+    static public function insert_tracking(analytics_interface $analytics);
 }

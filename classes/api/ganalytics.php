@@ -27,17 +27,19 @@
  */
 namespace local_analytics\api;
 
+use local_analytics\settings\analytics_interface;
+
 defined('MOODLE_INTERNAL') || die();
 
 class ganalytics extends AbstractLocalAnalytics {
-    public static function insert_tracking() {
+    public static function insert_tracking(analytics_interface $analytics) {
         global $CFG;
 
-        $siteid = get_config('local_analytics', 'siteid');
-        $cleanurl = get_config('local_analytics', 'cleanurl');
-        $location = "additionalhtml".get_config('local_analytics', 'location');
+        $siteid = $analytics->get_property('siteid');
+        $cleanurl = $analytics->get_property('cleanurl');
+        $location = "additionalhtmlhead";
 
-        if (self::should_track()) {
+        if (self::should_track($analytics)) {
             $page = ($cleanurl ? "'".self::trackurl(true, true)."'" : '');
             $CFG->$location .= <<<HTML
 <script type="text/javascript" name="localga">

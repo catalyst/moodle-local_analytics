@@ -22,6 +22,7 @@ namespace local_analytics\api;
 defined('MOODLE_INTERNAL') || die();
 
 use core\session\manager;
+use local_analytics\settings\analytics_interface;
 
 /**
  * Abstract local analytics class.
@@ -98,12 +99,12 @@ abstract class AbstractLocalAnalytics implements local_analytics_interface {
      * @return boolean
      *   The outcome of our deliberations.
      */
-    public static function should_track() {
+    public static function should_track(analytics_interface $analytics) {
         if (!is_siteadmin()) {
             return true;
         }
 
-        $trackadmin = get_config('local_analytics', 'trackadmin');
+        $trackadmin = $analytics->get_property('trackadmin');
         return ($trackadmin == 1);
     }
 
@@ -113,13 +114,13 @@ abstract class AbstractLocalAnalytics implements local_analytics_interface {
      * @return string
      *   The full name to log for the user.
      */
-    public static function user_full_name() {
+    public static function user_full_name(analytics_interface $analytics) {
         global $USER;
         $user = $USER;
         $ismasquerading = manager::is_loggedinas();
 
         if ($ismasquerading) {
-            $usereal = get_config('local_analytics', 'masquerade_handling');
+            $usereal = $analytics->get_property('masqueradehandling');
             if ($usereal) {
                 $user = manager::get_realuser();
             }
