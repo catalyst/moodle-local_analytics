@@ -67,7 +67,7 @@ EOD;
         $scope = 'page';
 
         // User Details ("John Smith ([user_id])").
-        $customvars .= self::local_get_custom_var_string(1, 'UserName', self::user_full_name(), $scope);
+        $customvars .= self::local_get_custom_var_string(1, 'UserName', self::user_full_name($analytics), $scope);
 
         // User Role.
         if (is_siteadmin($USER->id)) {
