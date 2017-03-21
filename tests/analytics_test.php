@@ -52,6 +52,7 @@ class analytics_test extends advanced_testcase {
         $this->data = new stdClass();
         $this->data->id = 3;
         $this->data->enabled = false;
+        $this->data->locaton = 'head';
         $this->data->type = 'piwik';
         $this->data->siteid = 'siteID';
         $this->data->trackadmin = 1;
@@ -110,6 +111,7 @@ class analytics_test extends advanced_testcase {
         return array(
             array('id', null),
             array('enabled', 0),
+            array('location', 'head'),
             array('type', 'piwik'),
             array('siteid', 1),
             array('trackadmin', 0),
@@ -177,6 +179,7 @@ class analytics_test extends advanced_testcase {
         return array(
             array('id', 3),
             array('enabled', 0),
+            array('location', 'head'),
             array('type', 'piwik'),
             array('siteid', 'siteID'),
             array('trackadmin', 1),

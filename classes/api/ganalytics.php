@@ -37,7 +37,7 @@ class ganalytics extends AbstractLocalAnalytics {
 
         $siteid = $analytics->get_property('siteid');
         $cleanurl = $analytics->get_property('cleanurl');
-        $location = "additionalhtmlhead";
+        $location = "additionalhtml" . $analytics->get_property('location');
 
         if (self::should_track($analytics)) {
             $page = ($cleanurl ? "'".self::trackurl(true, true)."'" : '');

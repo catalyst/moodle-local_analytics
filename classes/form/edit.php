@@ -60,6 +60,17 @@ class edit extends moodleform {
         $mform->setDefault('enabled', 1);
 
         $choices = array(
+            'head' => get_string('head', 'local_analytics'),
+            'topofbody' => get_string('topofbody', 'local_analytics'),
+            'footer' => get_string('footer', 'local_analytics'),
+        );
+
+        $mform->addElement('select', 'location', get_string('location', 'local_analytics'), $choices);
+        $mform->addHelpButton('location', 'location', 'local_analytics');
+        $mform->setType('location', PARAM_TEXT);
+
+
+        $choices = array(
             'piwik' => get_string('piwik', 'local_analytics'),
             'guniversal' => get_string('guniversal', 'local_analytics'),
             'ganalytics' => get_string('ganalytics', 'local_analytics'),

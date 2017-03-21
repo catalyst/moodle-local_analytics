@@ -40,6 +40,7 @@ function xmldb_local_analytics_upgrade($oldversion) {
         $table = new xmldb_table('local_analytics');
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('enabled', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('location', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, 'head');
         $table->add_field('type', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL);
         $table->add_field('siteid', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL);
         $table->add_field('usedimensions', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');

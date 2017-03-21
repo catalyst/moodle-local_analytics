@@ -58,6 +58,7 @@ class analytics_manager_test extends advanced_testcase {
         for ($i = 1; $i <= 4; $i++) {
             $data = new stdClass();
             $data->enabled = $i;
+            $data->location = 'location' . $i;
             $data->type = 'piwik' . $i;
             $data->siteid = 'siteID' . $i;
             $data->trackadmin = $i;
@@ -139,6 +140,7 @@ class analytics_manager_test extends advanced_testcase {
 
         $data = $this->data[2];
         $data->enabled = 1;
+        $data->location = 'New location';
         $data->type = 'New piwik';
         $data->siteid = 'New siteID';
         $data->trackadmin = 1;

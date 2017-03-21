@@ -8,6 +8,7 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Enable Analytics"/>
+        <FIELD NAME="location" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="head" SEQUENCE="false" COMMENT="Analytics location on a page"/>
         <FIELD NAME="type" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="A type of Analytics"/>
         <FIELD NAME="siteid" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Site ID of Analytics"/>
         <FIELD NAME="usedimensions" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Use custom dimensions rather than custom variables."/>

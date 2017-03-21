@@ -37,7 +37,7 @@ class guniversal extends AbstractLocalAnalytics {
 
         $siteid = $analytics->get_property('siteid');
         $cleanurl = $analytics->get_property('cleanurl');
-        $location = "additionalhtmlhead";
+        $location = "additionalhtml" . $analytics->get_property('location');
 
         if ($cleanurl) {
             $addition = "{'hitType' : 'pageview',

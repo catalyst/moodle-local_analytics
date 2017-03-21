@@ -67,6 +67,7 @@ class analytics_table extends flexible_table {
                 'type',
                 'siteid',
                 'enabled',
+                'location',
                 'url',
                 'actions'
             )
@@ -76,6 +77,7 @@ class analytics_table extends flexible_table {
                 get_string('type', 'local_analytics'),
                 get_string('siteid', 'local_analytics'),
                 get_string('enabled', 'local_analytics'),
+                get_string('location', 'local_analytics'),
                 get_string('siteurl', 'local_analytics'),
                 get_string('actions'),
             )
@@ -116,6 +118,7 @@ class analytics_table extends flexible_table {
                 get_string($analytics->get_property('type'), 'local_analytics'),
                 $analytics->get_property('siteid'),
                 $enabled,
+                get_string($analytics->get_property('location'), 'local_analytics'),
                 $analytics->get_property('siteurl'),
                 $this->create_data_buttons($analytics, true),
             ), $class

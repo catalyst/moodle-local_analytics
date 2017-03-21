@@ -64,6 +64,7 @@ class edit_test extends advanced_testcase {
             'id' => 3,
             'enabled' => false,
             'type' => 'piwik',
+            'location' => 'head',
             'siteid' => 'siteID',
             'trackadmin' => 1,
             'masqueradehandling' => 0,
@@ -107,6 +108,7 @@ class edit_test extends advanced_testcase {
         return array(
             array('id', true, 'hidden', null),
             array('enabled', true, 'checkbox', 1),
+            array('location', true, 'select', null),
             array('type', true, 'select', null),
             array('siteid', true, 'text', null),
             array('trackadmin', true, 'checkbox', null),
@@ -155,6 +157,7 @@ class edit_test extends advanced_testcase {
         return array(
             array('id', true, 'hidden', 3),
             array('enabled', true, 'checkbox', 0),
+            array('location', true, 'select', array('head')),
             array('type', true, 'select', array('piwik')),
             array('siteid', true, 'text', 'siteID'),
             array('trackadmin', true, 'checkbox', 1),

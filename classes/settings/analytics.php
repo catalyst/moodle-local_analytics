@@ -50,6 +50,13 @@ class analytics implements analytics_interface {
     protected $enabled = 0;
 
     /**
+     * Analytics location on the page.
+     *
+     * @var string
+     */
+    protected $location = 'head';
+
+    /**
      * Type of an analytics.
      *
      * @var string
