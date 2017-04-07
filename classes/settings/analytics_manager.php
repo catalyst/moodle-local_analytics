@@ -26,6 +26,7 @@
 namespace local_analytics\settings;
 
 use stdClass;
+use cache;
 
 /**
  * Class analytics_manager manages analytics in DB.
@@ -39,11 +40,52 @@ class analytics_manager implements analytics_manager_interface {
     const TABLE_NAME = 'local_analytics';
 
     /**
+     * A name of the cache component.
+     */
+    const CACHE_COMPONENT = 'local_analytics';
+
+    /**
+     * A name of the cache area.
+     */
+    const CACHE_AREA = 'records';
+
+    /**
+     * A cache key name to store all records.
+     */
+    const CACHE_ALL_RECORDS_KEY = 'allrecords';
+
+    /**
+     * A cache key name to store only enabled records.
+     */
+    const CACHE_ENABLED_RECORDS_KEY = 'enabledrecords';
+
+    /**
      * Global DB object.
      *
      * @var \moodle_database
      */
     protected $db;
+
+    /**
+     * A a cache instance.
+     *
+     * @var \cache_application|\cache_session|\cache_store
+     */
+    protected $cache;
+
+    /**
+     * A list of all records.
+     *
+     * @var bool|false|mixed
+     */
+    protected $allrecords = false;
+
+    /**
+     * A list of enabled records.
+     *
+     * @var bool|false|mixed
+     */
+    protected $enabledrecords = false;
 
     /**
      * Constructor.
@@ -52,10 +94,15 @@ class analytics_manager implements analytics_manager_interface {
         global $DB;
 
         $this->db = $DB;
+        $this->cache = cache::make(self::CACHE_COMPONENT, self::CACHE_AREA);
+        $this->allrecords = $this->cache->get(self::CACHE_ALL_RECORDS_KEY);
+        $this->enabledrecords = $this->cache->get(self::CACHE_ENABLED_RECORDS_KEY);
     }
 
     /**
      * Returns single analytics record.
+     *
+     * Note: we don't want to use cache here.
      *
      * @param int $id Analytics record ID.
      *
@@ -77,7 +124,12 @@ class analytics_manager implements analytics_manager_interface {
      * @return array
      */
     public function get_all() {
-        return $this->get_multiple();
+        if ($this->allrecords === false) {
+            $this->allrecords = $this->get_multiple();
+            $this->cache->set(self::CACHE_ALL_RECORDS_KEY, $this->allrecords);
+        }
+
+        return $this->allrecords;
     }
 
     /**
@@ -86,7 +138,12 @@ class analytics_manager implements analytics_manager_interface {
      * @return array
      */
     public function get_enabled() {
-        return $this->get_multiple(array('enabled' => 1));
+        if ($this->enabledrecords === false) {
+            $this->enabledrecords = $this->get_multiple(array('enabled' => 1));
+            $this->cache->set(self::CACHE_ENABLED_RECORDS_KEY, $this->enabledrecords);
+        }
+
+        return $this->enabledrecords;
     }
 
     /**
@@ -104,6 +161,8 @@ class analytics_manager implements analytics_manager_interface {
         } else {
             $this->db->update_record(self::TABLE_NAME, $record);
         }
+
+        $this->clear_caches();
 
         return $record->id;
     }
@@ -144,6 +203,7 @@ class analytics_manager implements analytics_manager_interface {
      */
     public function delete($id) {
         $this->db->delete_records(self::TABLE_NAME, array('id' => $id));
+        $this->clear_caches();
     }
 
     /**
@@ -175,6 +235,16 @@ class analytics_manager implements analytics_manager_interface {
      */
     protected function get_table_fields() {
         return array_keys($this->db->get_columns(self::TABLE_NAME));
+    }
+
+    /**
+     * Clear caches for analytics records.
+     */
+    protected function clear_caches() {
+        $this->allrecords = false;
+        $this->enabledrecords = false;
+        $this->cache->delete(self::CACHE_ALL_RECORDS_KEY);
+        $this->cache->delete(self::CACHE_ENABLED_RECORDS_KEY);
     }
 
 }
