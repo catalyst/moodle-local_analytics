@@ -3,6 +3,12 @@ moodle-local_analytics
 
 Release notes:
 
+version: 2018092400
+
+- Fixing unit test "provider_testcase" privacy/tests/provider_test.php
+
+Add privacy provider with legacy_polyfill to say compatible with old version 
+
 version: 2017031300
 
 - Updated to work with Moodle versions 3.0, 3.1 and 3.2

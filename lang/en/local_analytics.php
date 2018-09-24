@@ -54,3 +54,7 @@ $string['guniversaldesc'] = 'Google Universal Analytics, make sure you enter a g
 $string['head'] = 'Header';
 $string['topofbody'] = 'Top of body';
 $string['footer'] = 'Footer';
+/*
+ * GDPR compliant
+ */
+$string['privacy:no_data_reason'] = "The local analytics plugin doesn't store any personal data.";
