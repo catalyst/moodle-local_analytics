@@ -47,8 +47,6 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-require_once($CFG->libdir.'/coursecatlib.php');
-
 /**
  * Class local_analytics_dimensions_testcase
  */
@@ -112,9 +110,9 @@ class local_analytics_dimensions_values_testcase extends advanced_testcase {
         $this->assertFalse($actual);
 
         // Create a set of nested categories.
-        $category1 = \coursecat::create(['name' => 'Top']);
-        $category2 = \coursecat::create(['name' => 'Middle', 'parent' => $category1->id]);
-        $category3 = \coursecat::create(['name' => 'Bottom', 'parent' => $category2->id]);
+        $category1 = \core_course_category::create(['name' => 'Top']);
+        $category2 = \core_course_category::create(['name' => 'Middle', 'parent' => $category1->id]);
+        $category3 = \core_course_category::create(['name' => 'Bottom', 'parent' => $category2->id]);
 
         $COURSE = $this->getDataGenerator()->create_course(['category' => $category3->id]);
 
